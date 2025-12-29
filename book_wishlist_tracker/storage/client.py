@@ -33,8 +33,6 @@ class PostgresClient:
         self,
         title: str,
         author: str,
-        year: int | None = None,
-        isbn: str | None = None,
         description: str | None = None,
         country: str | None = None,
         region: str | None = None,
@@ -51,8 +49,6 @@ class PostgresClient:
             new_book = Book(
                 title=title,
                 author=author,
-                year=year,
-                isbn=isbn,
                 description=description,
                 country=country,
                 region=region,
@@ -68,3 +64,10 @@ class PostgresClient:
         except Exception as e:
             print(f"DB Error: {e}")
             return False, str(e)
+
+    def get_all_books(self) -> list[Book]:
+        """Fetch all books from the database, ordered by ID descending."""
+        with self.SessionLocal() as session:
+            stmt = select(Book).order_by(Book.id.desc())
+            results = session.execute(stmt).scalars().all()
+            return results

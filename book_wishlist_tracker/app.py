@@ -5,7 +5,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from book_wishlist_tracker.ai import LocationAI
 from book_wishlist_tracker.books.service import BookLookupService
 from book_wishlist_tracker.config import Config
 from book_wishlist_tracker.storage.client import PostgresClient
@@ -29,7 +28,6 @@ class BookSelection(BaseModel):
     book_key: str
     title: str
     authors_str: str
-    original_year: int
     subjects: list[str]
 
 
@@ -46,65 +44,54 @@ async def read_root():
 def search_books(q: str):
     if not q:
         return []
-    results, _ = book_service.search_books(q, limit=20)
+    raw_results, _ = book_service.search_books(q)
 
     # Format for frontend
-    formatted_results = []
-    for res in results:
-        authors = ", ".join(res.get("authors", ["Unknown"]))
-        formatted_results.append(
+    # Frontend expects authors to be a string, and sends it back as authors_str
+    formatted = []
+    for book in raw_results:
+        authors = book.get("authors", [])
+        if isinstance(authors, list):
+            authors_str = ", ".join(authors)
+        else:
+            authors_str = str(authors)
+
+        formatted.append(
             {
-                "title": res["title"],
-                "authors": authors,
-                "year": res.get("first_publish_year", 0),
-                "key": res.get("key"),
-                "subjects": res.get("subjects", []),
+                "title": book.get("title"),
+                "authors": authors_str,
+                "key": book.get("key"),
+                "subjects": book.get("subjects", []),
             }
         )
-    return formatted_results
+
+    return formatted
 
 
 @app.post("/api/add")
 def add_book(book: BookSelection):
-    print(f"Adding book: {book.title} ({book.book_key})")
+    print(f"Adding book: {book.title}")
 
-    # 1. Fetch Latest Edition for basic metadata (Year, ISBN)
-    latest_edition = book_service.get_latest_edition(book.book_key)
+    # Fetch details via AI (single source of truth now)
+    # We assume 'authors_str' is passed, or we can use the author list from search result if available.
+    # The BookSelection model might need adjustment, but for now we'll use what we have.
+    # key in BookSelection might be the AI generated key or title-author slug.
 
-    # 2. Fetch Work Details for Description (Work level usually has the description)
-    work_details = book_service.get_work_details(book.book_key)
-    description = work_details.get("description", "") if work_details else ""
+    details = book_service.get_book_metadata(book.title, book.authors_str)
 
-    # Defaults from selection/work
-    title = book.title
-    year = book.original_year
-    isbn = None
-    subjects = book.subjects
-
-    if latest_edition:
-        print("  Latest edition found, updating metadata.")
-        title = latest_edition.get("title", title)
-        year = latest_edition.get("year", year)
-        isbn_list = latest_edition.get("isbn")
-        isbn = isbn_list[0] if isbn_list else None
-        # pages = latest_edition.get("pages") # Removed as per requirement
-
-    # 3. Extract Location via AI
-    ai = LocationAI()  # Uses default llama3.2
-    print(f"  Extracting location for '{title}'...")
-    location = ai.extract_location(title, description)
-    print(f"  Location found: {location}")
+    if not details:
+        raise HTTPException(status_code=404, detail="Could not fetch book details.")
 
     # Add to Database
     added, msg = db_client.add_book(
-        title=title,
-        author=book.authors_str,
-        year=year,
-        isbn=isbn,
-        description=description,
-        country=location.get("country", "Unknown"),
-        region=location.get("region", "Unknown"),
-        subjects=subjects,
+        title=details.get("title", book.title),
+        author=", ".join(details.get("authors", []))
+        if isinstance(details.get("authors"), list)
+        else details.get("authors", book.authors_str),
+        description=details.get("description", ""),
+        country=details.get("country", "Unknown"),
+        region=details.get("region", "Unknown"),
+        subjects=details.get("subjects", []),
     )
 
     if added:
@@ -112,3 +99,23 @@ def add_book(book: BookSelection):
     else:
         print(f"DB Add Failed: {msg}")
         raise HTTPException(status_code=500, detail=msg)
+
+
+@app.get("/api/wishlist")
+def get_wishlist():
+    books = db_client.get_all_books()
+
+    formatted = []
+    for b in books:
+        formatted.append(
+            {
+                "id": b.id,
+                "title": b.title,
+                "author": b.author,
+                "description": b.description,
+                "country": b.country,
+                "region": b.region,
+                "subjects": b.subjects.split(", ") if b.subjects else [],
+            }
+        )
+    return formatted

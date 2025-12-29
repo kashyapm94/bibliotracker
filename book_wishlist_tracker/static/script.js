@@ -1,7 +1,50 @@
 const searchInput = document.getElementById('searchInput');
 const dropdown = document.getElementById('dropdown');
 const toast = document.getElementById('toast');
+const wishlistGrid = document.getElementById('wishlist');
 let debounceTimer;
+
+// Initial load
+document.addEventListener('DOMContentLoaded', fetchWishlist);
+
+async function fetchWishlist() {
+    try {
+        const res = await fetch('/api/wishlist');
+        const data = await res.json();
+        renderWishlist(data);
+    } catch (error) {
+        console.error("Error fetching wishlist:", error);
+    }
+}
+
+function renderWishlist(books) {
+    wishlistGrid.innerHTML = '';
+    
+    if (books.length === 0) {
+        wishlistGrid.innerHTML = '<div class="empty-wishlist">Your wishlist is empty. Start adding books!</div>';
+        return;
+    }
+
+    books.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        
+        card.innerHTML = `
+            <div class="book-info">
+                <h3 class="book-title">${book.title}</h3>
+                <p class="book-author">by ${book.author}</p>
+                <p class="book-description">${book.description || 'No description available.'}</p>
+                <div class="book-meta">
+                    <span class="location">📍 ${book.country}${book.region ? ', ' + book.region : ''}</span>
+                </div>
+                <div class="book-tags">
+                    ${book.subjects.map(s => `<span class="tag">${s}</span>`).join('')}
+                </div>
+            </div>
+        `;
+        wishlistGrid.appendChild(card);
+    });
+}
 
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value.trim();
@@ -40,9 +83,8 @@ function renderDropdown(results) {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
             
-            const yearStr = book.year ? `(${book.year})` : '';
             item.innerHTML = `
-                <span class="item-title">${book.title} ${yearStr}</span>
+                <span class="item-title">${book.title}</span>
                 <span class="item-meta">${book.authors}</span>
             `;
             
@@ -66,7 +108,6 @@ async function selectBook(book) {
             book_key: book.key,
             title: book.title,
             authors_str: book.authors,
-            original_year: book.year,
             subjects: book.subjects || []
         };
 
@@ -81,6 +122,7 @@ async function selectBook(book) {
         if (res.ok) {
             showToast(data.message);
             searchInput.value = ''; // clear only on success
+            fetchWishlist(); // Refresh wishlist
         } else {
             showToast(data.detail || "Failed to add book", true);
         }
