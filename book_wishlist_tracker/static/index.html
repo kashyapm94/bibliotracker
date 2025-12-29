@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Wishlist Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ Book Wishlist Tracker</h1>
+            <p>Search and add books to your Wishlist collection</p>
+        </header>
+
+        <main>
+            <div class="search-card">
+                <div class="input-group">
+                    <input type="text" id="searchInput" placeholder="Search for a book..." autocomplete="off">
+                    <div class="search-icon">🔍</div>
+                </div>
+                
+                <div id="dropdown" class="dropdown hidden">
+                    <!-- Results will be injected here -->
+                    <div class="full-search-action hidden" id="fullSearchAction">
+                        Press Enter to search...
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="toast" class="toast hidden">Book added successfully!</div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
