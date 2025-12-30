@@ -24,9 +24,7 @@ class PostgresClient:
         self.url = f"postgresql+psycopg://{app_config.DB_USER}:{app_config.DB_PASSWORD}@{app_config.DB_HOST}:{app_config.DB_PORT}/{app_config.DB_NAME}"
 
         self.engine = create_engine(self.url)
-        self.SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine
-        )
+        self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
         # Ensure tables exist
         self.initialize_schema()
@@ -47,7 +45,7 @@ class PostgresClient:
         Returns:
             bool: True if the book exists, False otherwise.
         """
-        with self.SessionLocal() as session:
+        with self.session() as session:
             stmt = select(Book).where(Book.title.ilike(book_title))
             result = session.execute(stmt).first()
             return result is not None
@@ -91,7 +89,7 @@ class PostgresClient:
                 is_fiction=is_fiction_category,
             )
 
-            with self.SessionLocal() as session:
+            with self.session() as session:
                 session.add(new_book)
                 session.commit()
                 # session.refresh(new_book) # Optional, if we needed the ID back
@@ -114,7 +112,7 @@ class PostgresClient:
         Returns:
             list[Book]: A list of Book model instances, ordered by ID descending.
         """
-        with self.SessionLocal() as session:
+        with self.session() as session:
             stmt = (
                 select(Book)
                 .order_by(Book.id.desc())
@@ -133,7 +131,7 @@ class PostgresClient:
         """
         from sqlalchemy import func
 
-        with self.SessionLocal() as session:
+        with self.session() as session:
             stmt = select(func.count(Book.id))
             return session.execute(stmt).scalar() or 0
 
@@ -142,7 +140,7 @@ class PostgresClient:
         Aggregate stats for regions and fiction/non-fiction distribution.
         Returns dictionaries mapping categories/regions to lists of books.
         """
-        with self.SessionLocal() as session:
+        with self.session() as session:
             # Fetch all books to process in python (dataset is small)
             stmt = select(Book)
             books = session.execute(stmt).scalars().all()
