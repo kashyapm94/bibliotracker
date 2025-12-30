@@ -52,11 +52,12 @@ function renderWishlist(books) {
     books.forEach(book => {
         const card = document.createElement('div');
         card.className = 'book-card';
+        // Add click listener
+        card.onclick = () => openBookDetails(book);
         
         card.innerHTML = `
             <h3 class="book-title">${book.title}</h3>
             <p class="book-author">by ${book.author}</p>
-            <p class="book-description">${book.description || 'No description available.'}</p>
             <div class="book-meta">
                 <span class="location">📍 ${book.region}</span>
                 <span class="category-tag">${book.is_fiction}</span>
@@ -184,6 +185,39 @@ function showToast(message, isError = false) {
         toast.className = 'toast hidden';
     }, 3000);
 }
+
+// Modal Logic
+const detailsModal = document.getElementById('detailsModal');
+const closeModalBtn = document.getElementById('closeModal');
+
+function openBookDetails(book) {
+    document.getElementById('modalTitle').textContent = book.title;
+    document.getElementById('modalAuthor').textContent = `by ${book.author}`;
+    document.getElementById('modalDescription').textContent = book.description || 'No description available.';
+    document.getElementById('modalRegion').textContent = `📍 ${book.region}`;
+    document.getElementById('modalCategory').textContent = book.is_fiction;
+    
+    const tagsContainer = document.getElementById('modalTags');
+    tagsContainer.innerHTML = book.subjects.map(s => `<span class="tag">${s}</span>`).join('');
+    
+    // Set Amazon Link
+    const amazonLink = document.getElementById('amazonLink');
+    const searchTerm = `${book.title} ${book.author}`;
+    amazonLink.href = `https://www.amazon.de/s?k=${encodeURIComponent(searchTerm)}`;
+    
+    detailsModal.classList.remove('hidden');
+}
+
+closeModalBtn.addEventListener('click', () => {
+    detailsModal.classList.add('hidden');
+});
+
+// Close modal if clicked outside content
+detailsModal.addEventListener('click', (e) => {
+    if (e.target === detailsModal) {
+        detailsModal.classList.add('hidden');
+    }
+});
 
 // Close dropdown if clicked outside
 document.addEventListener('click', (e) => {
