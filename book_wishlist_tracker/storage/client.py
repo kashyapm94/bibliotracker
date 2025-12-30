@@ -19,11 +19,7 @@ class PostgresClient:
         Args:
             app_config (Config): Configuration object containing database credentials and host.
         """
-        # Construct Database URL
-        # Format: postgresql+psycopg://user:password@host:port/dbname
-        self.url = f"postgresql+psycopg://{app_config.DB_USER}:{app_config.DB_PASSWORD}@{app_config.DB_HOST}:{app_config.DB_PORT}/{app_config.DB_NAME}"
-
-        self.engine = create_engine(self.url)
+        self.engine = create_engine(str(app_config.SQLALCHEMY_DATABASE_URI))
         self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
         # Ensure tables exist

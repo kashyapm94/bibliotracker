@@ -16,10 +16,7 @@ class BookAI:
         Initialize the BookAI with a Perplexity client using the API key from Config.
         """
         config = Config()
-        if config.PERPLEXITY_API_KEY:
-            self.client = Perplexity(api_key=config.PERPLEXITY_API_KEY)
-        else:
-            self.client = None
+        self.client = Perplexity(api_key=config.PERPLEXITY_API_KEY)
 
     def _query_ai(self, prompt_text: str) -> str:
         """
