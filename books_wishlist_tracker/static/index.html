@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kashyap's Library</title>
+    <link rel="stylesheet" href="/static/style.css?v=25">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="gradient-text">Kashyap's Library</span> 📚</h1>
+            <p>Building a repository of knowledge, one book at a time</p>
+        </header>
+
+        <main>
+            <div class="search-card hidden" id="searchSection">
+                <div class="input-group">
+                    <input type="text" id="searchInput" placeholder="Search for a book..." autocomplete="off">
+                    <div class="search-icon">🔍</div>
+                </div>
+                
+                <div id="dropdown" class="dropdown hidden">
+                    <!-- Results will be injected here -->
+                    <div class="full-search-action hidden" id="fullSearchAction">
+                        Press Enter to search...
+                    </div>
+                </div>
+            </div>
+            <div class="wishlist-section">
+                <div class="section-header">
+                    <h2>To-Read List</h2>
+                    <a href="/static/stats.html" class="stats-link">View Stats 📊</a>
+                </div>
+                <div id="wishlist" class="wishlist-grid">
+                    <!-- Wishlist items will be injected here -->
+                </div>
+                <div id="pagination" class="pagination-controls hidden">
+                    <button id="prevPage" class="pagination-btn" disabled>← Previous</button>
+                    <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                    <button id="nextPage" class="pagination-btn">Next →</button>
+                </div>
+            </div>
+        </main>
+
+
+    </div>
+
+    <!-- Moved Toast to Body Level -->
+    <div id="toast" class="toast hidden">Book added successfully!</div>
+
+    <!-- Book Details Modal -->
+    <div id="detailsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2 id="modalTitle" class="modal-title"></h2>
+            <p id="modalAuthor" class="modal-author"></p>
+            
+            <div class="modal-body">
+                <p id="modalDescription" class="modal-description"></p>
+                
+                <div class="modal-meta-row">
+                    <span id="modalRegion" class="location"></span>
+                    <span id="modalCategory" class="category-tag"></span>
+                </div>
+                
+                <div id="modalTags" class="book-tags modal-tags"></div>
+
+                <a id="amazonLink" href="#" target="_blank" class="amazon-btn">
+                    View on Amazon.de ↗
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="loginModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close-modal" id="closeLoginModal">&times;</span>
+            <h2 class="modal-title">Admin Access</h2>
+            
+            <div style="margin: 2rem 0;">
+                <input type="password" id="adminPasswordInput" placeholder="Enter Password" style="text-align: center;">
+                <div id="loginError" class="error-text hidden">Invalid Password</div>
+            </div>
+            
+            <button id="submitAdminLogin" class="pagination-btn" style="width: 100%;">Unlock</button>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <span id="adminLogin" class="admin-lock" title="Admin Login">🔒</span>
+        <span id="adminLogout" class="admin-unlock hidden" title="Logout">🔓</span>
+    </footer>
+
+    <script src="/static/script.js?v=2"></script>
+</body>
+</html>
