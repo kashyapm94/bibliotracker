@@ -230,6 +230,12 @@ const searchSection = document.getElementById('searchSection');
 const adminLoginBtn = document.getElementById('adminLogin');
 const adminLogoutBtn = document.getElementById('adminLogout');
 
+const loginModal = document.getElementById('loginModal');
+const closeLoginModal = document.getElementById('closeLoginModal');
+const adminPasswordInput = document.getElementById('adminPasswordInput');
+const submitAdminLogin = document.getElementById('submitAdminLogin');
+const loginError = document.getElementById('loginError');
+
 let adminPassword = null;
 
 function checkAdmin() {
@@ -244,8 +250,27 @@ function checkAdmin() {
     }
 }
 
-adminLoginBtn.addEventListener('click', async () => {
-    const pwd = prompt("Enter Admin Password:");
+// Show Login Modal
+adminLoginBtn.addEventListener('click', () => {
+    loginModal.classList.remove('hidden');
+    adminPasswordInput.value = '';
+    loginError.classList.add('hidden'); // Clear previous errors
+    setTimeout(() => adminPasswordInput.focus(), 100);
+});
+
+// Close Login Modal
+closeLoginModal.addEventListener('click', () => {
+    loginModal.classList.add('hidden');
+});
+
+// Hide error on input
+adminPasswordInput.addEventListener('input', () => {
+    loginError.classList.add('hidden');
+});
+
+// Submit Login
+async function performLogin() {
+    const pwd = adminPasswordInput.value;
     if (!pwd) return;
 
     try {
@@ -258,11 +283,23 @@ adminLoginBtn.addEventListener('click', async () => {
             adminPassword = pwd;
             checkAdmin();
             showToast("Logged in as Admin");
+            loginModal.classList.add('hidden');
         } else {
-            showToast("Invalid Password", true);
+            // Show inline error instead of toast
+            loginError.classList.remove('hidden');
+            adminPasswordInput.value = '';
+            adminPasswordInput.focus();
         }
     } catch (error) {
         showToast("Error verifying password", true);
+    }
+}
+
+submitAdminLogin.addEventListener('click', performLogin);
+
+adminPasswordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        performLogin();
     }
 });
 
