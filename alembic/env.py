@@ -9,8 +9,8 @@ from alembic import context
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from book_wishlist_tracker.config import Config
-from book_wishlist_tracker.storage.models import Base
+from books_wishlist_tracker.config import Config
+from books_wishlist_tracker.storage.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,7 +18,7 @@ config = context.config
 
 # Set the sqlalchemy.url from our Config class
 app_config = Config()
-db_url = f"postgresql+psycopg://{app_config.DB_USER}:{app_config.DB_PASSWORD}@{app_config.DB_HOST}:{app_config.DB_PORT}/{app_config.DB_NAME}"
+db_url = str(app_config.SQLALCHEMY_DATABASE_URI)
 config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.

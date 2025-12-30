@@ -15,7 +15,7 @@ MockPostgresClient = patcher_db.start()
 MockPostgresClient.return_value = MagicMock()
 
 # Import app modules
-from book_wishlist_tracker.app import app, db_client
+from books_wishlist_tracker.app import app, db_client
 
 
 @pytest.fixture

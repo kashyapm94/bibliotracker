@@ -1,6 +1,6 @@
 from pytest_mock import MockerFixture
 
-from book_wishlist_tracker.books.service import BookLookupService
+from books_wishlist_tracker.books.service import BookLookupService
 
 
 def test_search_books_success(mocker: MockerFixture) -> None:

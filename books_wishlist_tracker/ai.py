@@ -3,7 +3,7 @@ import re
 
 from perplexity import Perplexity
 
-from book_wishlist_tracker.config import Config
+from books_wishlist_tracker.config import Config
 
 
 class BookAI:
@@ -28,9 +28,7 @@ class BookAI:
         Returns:
             str: The raw text response from the AI, or an empty string on error.
         """
-        if not self.client:
-            print("Perplexity API Key missing")
-            return ""
+
         try:
             response = self.client.chat.completions.create(
                 model="sonar", messages=[{"role": "user", "content": prompt_text}]

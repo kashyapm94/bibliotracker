@@ -1,6 +1,6 @@
 import httpx
 
-from book_wishlist_tracker.ai import BookAI
+from books_wishlist_tracker.ai import BookAI
 
 
 class BookLookupService:
