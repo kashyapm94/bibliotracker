@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -31,8 +31,14 @@ class BookSelection(BaseModel):
     subjects: list[str]
 
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
+@app.get("/", response_class=HTMLResponse, response_model=None)
+async def read_root() -> HTMLResponse | str:
+    """
+    Serve the main frontend application.
+
+    Returns:
+        The content of index.html if it exists, otherwise a simple Error message.
+    """
     index_path = os.path.join(static_dir, "index.html")
     if os.path.exists(index_path):
         with open(index_path, "r") as f:
@@ -41,10 +47,19 @@ async def read_root():
 
 
 @app.get("/api/search")
-def search_books(q: str):
-    if not q:
+def search_books(query_string: str = Query(..., alias="q")) -> list[dict]:
+    """
+    Search for books using the OpenLibrary service.
+
+    Args:
+        query_string (str): The search query provided by the user.
+
+    Returns:
+        list[dict]: A list of formatted book objects for the frontend.
+    """
+    if not query_string:
         return []
-    raw_results, _ = book_service.search_books(q)
+    raw_results, _ = book_service.search_books(query_string)
 
     # Format for frontend
     # Frontend expects authors to be a string, and sends it back as authors_str
@@ -69,29 +84,41 @@ def search_books(q: str):
 
 
 @app.post("/api/add")
-def add_book(book: BookSelection):
-    print(f"Adding book: {book.title}")
+def add_book(selection: BookSelection) -> dict:
+    """
+    Add a selected book to the wishlist. Fetches rich metadata using AI.
+
+    Args:
+        selection (BookSelection): The book selected by the user from search results.
+
+    Returns:
+        dict: A success message and status.
+
+    Raises:
+        HTTPException: If book details cannot be fetched or DB addition fails.
+    """
+    print(f"Adding book: {selection.title}")
 
     # Fetch details via AI (single source of truth now)
     # We assume 'authors_str' is passed, or we can use the author list from search result if available.
     # The BookSelection model might need adjustment, but for now we'll use what we have.
     # key in BookSelection might be the AI generated key or title-author slug.
 
-    details = book_service.get_book_metadata(book.title, book.authors_str)
+    details = book_service.get_book_metadata(selection.title, selection.authors_str)
 
     if not details:
         raise HTTPException(status_code=404, detail="Could not fetch book details.")
 
     # Add to Database
     added, msg = db_client.add_book(
-        title=details.get("title", book.title),
-        author=", ".join(details.get("authors", []))
+        book_title=details.get("title", selection.title),
+        book_author=", ".join(details.get("authors", []))
         if isinstance(details.get("authors"), list)
-        else details.get("authors", book.authors_str),
-        description=details.get("description", ""),
-        country=details.get("country", "Unknown"),
-        region=details.get("region", "Unknown"),
-        subjects=details.get("subjects", []),
+        else details.get("authors", selection.authors_str),
+        book_description=details.get("description", ""),
+        book_region=details.get("region", "Unknown"),
+        book_subjects=details.get("subjects", []),
+        is_fiction_category=details.get("is_fiction", "Unknown"),
     )
 
     if added:
@@ -102,20 +129,42 @@ def add_book(book: BookSelection):
 
 
 @app.get("/api/wishlist")
-def get_wishlist():
-    books = db_client.get_all_books()
+def get_wishlist(
+    page_number: int = Query(1, alias="page"), page_size: int = Query(10, alias="size")
+) -> dict:
+    """
+    Retrieve a paginated list of books from the wishlist.
+
+    Args:
+        page_number (int): The page number to fetch. Defaults to 1.
+        page_size (int): The number of items per page. Defaults to 10.
+
+    Returns:
+        dict: Paginated results including items, total count, and pagination metadata.
+    """
+    skip = (page_number - 1) * page_size
+    books = db_client.get_all_books(skip_records=skip, limit_records=page_size)
+    total = db_client.get_total_count()
 
     formatted = []
-    for b in books:
+    for book_record in books:
         formatted.append(
             {
-                "id": b.id,
-                "title": b.title,
-                "author": b.author,
-                "description": b.description,
-                "country": b.country,
-                "region": b.region,
-                "subjects": b.subjects.split(", ") if b.subjects else [],
+                "id": book_record.id,
+                "title": book_record.title,
+                "author": book_record.author,
+                "description": book_record.description,
+                "region": book_record.region,
+                "subjects": book_record.subjects.split(", ")
+                if book_record.subjects
+                else [],
+                "is_fiction": book_record.is_fiction or "Unknown",
             }
         )
-    return formatted
+    return {
+        "items": formatted,
+        "total": total,
+        "page": page_number,
+        "size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }

@@ -1,5 +1,4 @@
 import json
-from typing import Dict, List, Optional
 
 from perplexity import Perplexity
 
@@ -7,53 +6,95 @@ from book_wishlist_tracker.config import Config
 
 
 class BookAI:
-    def __init__(self):
+    """
+    Handles interactions with the Perplexity AI for fetching book metadata.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialize the BookAI with a Perplexity client using the API key from Config.
+        """
         config = Config()
         if config.PERPLEXITY_API_KEY:
             self.client = Perplexity(api_key=config.PERPLEXITY_API_KEY)
         else:
             self.client = None
 
-    def _query_ai(self, prompt: str) -> str:
+    def _query_ai(self, prompt_text: str) -> str:
+        """
+        Send a prompt to the Perplexity AI and return the response content.
+
+        Args:
+            prompt_text (str): The prompt string to send to the AI.
+
+        Returns:
+            str: The raw text response from the AI, or an empty string on error.
+        """
         if not self.client:
             print("Perplexity API Key missing")
             return ""
         try:
             response = self.client.chat.completions.create(
-                model="sonar", messages=[{"role": "user", "content": prompt}]
+                model="sonar", messages=[{"role": "user", "content": prompt_text}]
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Perplexity Query Error: {e}")
             return ""
 
-    def _clean_json(self, content: str) -> str:
-        content = content.replace("```json", "").replace("```", "").strip()
+    def _clean_json(self, raw_content: str) -> str:
+        """
+        Extract and clean a JSON object string from the AI's response.
+
+        Args:
+            raw_content (str): The raw text response containing a JSON object.
+
+        Returns:
+            str: The cleaned JSON object string.
+        """
+        content = raw_content.replace("```json", "").replace("```", "").strip()
         start = content.find("{")
         end = content.rfind("}") + 1
         return content[start:end] if start != -1 and end != -1 else "{}"
 
-    def _clean_json_list(self, content: str) -> str:
-        content = content.replace("```json", "").replace("```", "").strip()
+    def _clean_json_list(self, raw_content: str) -> str:
+        """
+        Extract and clean a JSON list string from the AI's response.
+
+        Args:
+            raw_content (str): The raw text response containing a JSON list.
+
+        Returns:
+            str: The cleaned JSON list string.
+        """
+        content = raw_content.replace("```json", "").replace("```", "").strip()
         start = content.find("[")
         end = content.rfind("]") + 1
         return content[start:end] if start != -1 and end != -1 else "[]"
 
-    def get_book_details(self, title: str, author: str) -> Dict:
+    def get_book_details(self, book_title: str, book_author: str) -> dict:
         """
-        Get detailed metadata for a specific book.
+        Fetch rich metadata for a specific book using Perplexity AI.
+
+        Args:
+            book_title (str): The title of the book.
+            book_author (str): The author(s) of the book.
+
+        Returns:
+            dict: A dictionary containing canonical title, authors, description,
+                  region, subjects, and fiction/non-fiction status.
         """
         if not self.client:
             return {}
 
-        prompt = f"""Provide detailed metadata for the book "{title}" by "{author}".
+        prompt = f"""Provide detailed metadata for the book "{book_title}" by "{book_author}".
         Return a JSON object with:
         - "title": Full canonical title
         - "authors": List of author names
         - "description": A concise English summary (max 100 words)
-        - "country": Primary setting/origin country
         - "region": Continent/Region
-        - "subjects": List of 3-5 main genres/subjects
+        - "subjects": List of 3 main genres/subjects
+        - "is_fiction": Categorize as "Fiction" or "Non-Fiction"
 
         Data must be accurate. Description MUST be in English.
         Return ONLY valid JSON. No explanation."""

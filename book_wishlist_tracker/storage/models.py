@@ -13,9 +13,9 @@ class Book(Base):
     title = Column(String, index=True, nullable=False)
     author = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    country = Column(String, nullable=True)
     region = Column(String, nullable=True)
     subjects = Column(Text, nullable=True)  # Stored as comma-separated values
+    is_fiction = Column(String, nullable=True)  # Store "Fiction" or "Non-Fiction"
 
     def __repr__(self):
         return f"<Book(title={self.title}, author={self.author})>"
