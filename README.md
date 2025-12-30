@@ -91,14 +91,14 @@ A modern, intelligent web application to track your **to-read list**. It goes be
 Start the backend server:
 
 ```bash
-uv run uvicorn book_wishlist_tracker.app:app --reload
+uv run uvicorn books_wishlist_tracker.app:app --reload
 ```
 
 Open your browser and navigate to: **http://127.0.0.1:8000**
 
 ## Project Structure
 
-- `book_wishlist_tracker/`
+- `books_wishlist_tracker/`
     - `app.py`: Main FastAPI entry point and API routes.
     - `ai.py`: Perplexity AI integration service.
     - `books/`: Open Library integration service.
