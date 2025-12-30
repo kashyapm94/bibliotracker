@@ -1,22 +1,50 @@
 # Book Wishlist Tracker
 
-A modern web application to track your book wishlist, automatically enriching entries with metadata and geopolitical context using AI.
+A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your wishlist through an interactive dashboard.
 
-## Features
+## ✨ Features
 
-- **Smart Search**: Integrated with Open Library to find books instantly.
-- **AI-Powered Context**: Uses **Perplexity AI** to automatically extract the setting (Country & Region) of the book.
-- **Duplicate Prevention**: Intelligently prevents adding the same book twice (case-insensitive).
-- **English Editions First**: Prioritizes English editions when adding books.
-- **Modern Stack**: Built with FastAPI, PostgreSQL, and SQLAlchemy.
+### 🧠 AI-Powered Intelligence
+- **Smart Enrichment**: Uses **Perplexity AI (Sonar model)** to automatically fetch rich metadata, including canonical titles, authors, and summaries.
+- **Context Awareness**: Automatically extracts the **Region** and **Country** setting of a book to help you organize your list effectively.
+- **Subject Analysis**: Categorizes books into key subjects and genres (Fiction/Non-Fiction) for better organization.
 
-## Prerequisites
+### 📊 Interactive Statistics Dashboard
+- **Visual Insights**: specific visualizations powered by **Chart.js** to track your wishlist.
+    - **Region Map**: See the distribution of your books across different continents/regions.
+    - **Genre Split**: Visualize the balance between Fiction and Non-Fiction.
+    - **Top Subjects**: Identify your most read topics.
+- **Drill-Down Capability**: Click on any chart segment to see the specific list of books in that category.
 
-- **Python 3.12+** (Managed via `uv`)
+### 🔎 Smart Search & Management
+- **Instant Search**: Integrated with **Open Library** API to find books instantly.
+- **English-First**: Prioritizes English editions in search results to ensure relevance.
+- **Duplicate Prevention**: Intelligently prevents adding the same book twice (case-insensitive) to keep your list clean.
+- **Secure Admin**: Protected by an admin password to prevent unauthorized additions to your curated list.
+
+### 🎨 Modern Experience
+- **Premium UI**: clean, responsive interface built with **Vanilla CSS** and a focus on typography (Outfit font).
+- **No-Bloat Frontend**: Built with **Vanilla JavaScript** (no heavy frameworks) for lightning-fast performance.
+
+## 🛠 Tech Stack
+
+- **Backend**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
+- **Database**: PostgreSQL with [SQLAlchemy](https://www.sqlalchemy.org/) (Async/Await)
+- **AI**: [Perplexity API](https://docs.perplexity.ai/)
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Visualization**: [Chart.js](https://www.chartjs.org/)
+- **Package Manager**: [uv](https://github.com/astral-sh/uv)
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Python 3.12+**
 - **PostgreSQL** (Running locally on port 5432)
 - **Perplexity API Key** (For AI features)
+- **uv** (Recommended Python package manager)
 
-## Installation
+### Installation
 
 1.  **Clone the repository**:
     ```bash
@@ -24,7 +52,7 @@ A modern web application to track your book wishlist, automatically enriching en
     cd book-wishlist-tracker
     ```
 
-2.  **Install dependencies using `uv`**:
+2.  **Install dependencies**:
     ```bash
     uv sync
     ```
@@ -35,7 +63,7 @@ A modern web application to track your book wishlist, automatically enriching en
     CREATE DATABASE book_wishlist;
     ```
 
-## Configuration
+### Configuration
 
 1.  Copy the example environment file:
     ```bash
@@ -51,13 +79,16 @@ A modern web application to track your book wishlist, automatically enriching en
     POSTGRES_USERNAME=postgres
     POSTGRES_PASSWORD=your_password
 
-    # AI Configuration (Perplexity)
+    # AI Configuration
     PERPLEXITY_API_KEY=pplx-xxxxxxxxxxxxxxxxxxxxxx
+    
+    # Security
+    ADMIN_PASSWORD=secret_password
     ```
 
-## Running the Application
+### Running the Application
 
-Start the backend server (which also serves the frontend):
+Start the backend server:
 
 ```bash
 uv run uvicorn book_wishlist_tracker.app:app --reload
@@ -68,8 +99,8 @@ Open your browser and navigate to: **http://127.0.0.1:8000**
 ## Project Structure
 
 - `book_wishlist_tracker/`
-    - `app.py`: Main FastAPI application entry point.
-    - `ai.py`: AI service integration (Perplexity).
-    - `books/`: Service for interacting with Open Library.
-    - `storage/`: Database models and client (Postgres/SQLAlchemy).
-    - `static/`: Frontend assets (HTML, CSS, JS).
+    - `app.py`: Main FastAPI entry point and API routes.
+    - `ai.py`: Perplexity AI integration service.
+    - `books/`: Open Library integration service.
+    - `storage/`: Database connection and SQLAlchemy models.
+    - `static/`: Frontend assets (HTML, CSS, JS, Chart.js logic).

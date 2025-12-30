@@ -1,4 +1,5 @@
 import json
+import re
 
 from perplexity import Perplexity
 
@@ -72,6 +73,15 @@ class BookAI:
         end = content.rfind("]") + 1
         return content[start:end] if start != -1 and end != -1 else "[]"
 
+    def _clean_description(self, text: str) -> str:
+        """
+        Remove citation markers (e.g., [1], [2]) and source artifacts.
+        """
+        if not text:
+            return ""
+        # Remove citations like [1], [12], [1, 2]
+        return re.sub(r"\[\d+(?:,\s*\d+)*\]", "", text).strip()
+
     def get_book_details(self, book_title: str, book_author: str) -> dict:
         """
         Fetch rich metadata for a specific book using Perplexity AI.
@@ -91,8 +101,8 @@ class BookAI:
         Return a JSON object with:
         - "title": Full canonical title
         - "authors": List of author names
-        - "description": A concise English summary (max 100 words)
-        - "region": Continent/Region
+        - "description": A concise English summary (max 100 words). DO NOT include markdown citations (e.g. [1]) or source links.
+        - "region": Up to 2 major regions/continents, comma-separated string
         - "subjects": List of 3 main genres/subjects
         - "is_fiction": Categorize as "Fiction" or "Non-Fiction"
 
@@ -102,7 +112,10 @@ class BookAI:
         response = self._query_ai(prompt)
         try:
             json_str = self._clean_json(response)
-            return json.loads(json_str)
+            details = json.loads(json_str)
+            if "description" in details:
+                details["description"] = self._clean_description(details["description"])
+            return details
         except Exception as e:
             print(f"Error parsing book details: {e}")
             return {}

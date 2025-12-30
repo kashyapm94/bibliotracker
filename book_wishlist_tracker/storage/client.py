@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
@@ -134,3 +136,60 @@ class PostgresClient:
         with self.SessionLocal() as session:
             stmt = select(func.count(Book.id))
             return session.execute(stmt).scalar() or 0
+
+    def get_stats(self) -> dict:
+        """
+        Aggregate stats for regions and fiction/non-fiction distribution.
+        Returns dictionaries mapping categories/regions to lists of books.
+        """
+        with self.SessionLocal() as session:
+            # Fetch all books to process in python (dataset is small)
+            stmt = select(Book)
+            books = session.execute(stmt).scalars().all()
+
+            region_map = defaultdict(list)
+            category_map = defaultdict(list)
+            subject_map = defaultdict(list)
+            authors_set = set()
+
+            for book in books:
+                item = {"title": book.title, "author": book.author}
+
+                # Track unique authors
+                authors_set.add(book.author)
+
+                # Category Stats
+                cat = book.is_fiction if book.is_fiction else "Uncategorized"
+                category_map[cat].append(item)
+
+                # Region Stats (Split comma-separated)
+                if book.region:
+                    regions = [r.strip() for r in book.region.split(",")]
+                    for region in regions:
+                        if region:
+                            region_map[region].append(item)
+                else:
+                    region_map["Unknown"].append(item)
+
+                # Subject Stats (Split comma-separated)
+                if book.subjects:
+                    subjects = [s.strip() for s in book.subjects.split(",")]
+                    for subject in subjects:
+                        if subject:
+                            subject_map[subject].append(item)
+
+            # Get top 5 subjects
+            top_subjects = dict(
+                sorted(subject_map.items(), key=lambda x: len(x[1]), reverse=True)[:5]
+            )
+
+            return {
+                "total_books": len(books),
+                "unique_authors": len(authors_set),
+                "top_subject": max(subject_map.items(), key=lambda x: len(x[1]))[0]
+                if subject_map
+                else "N/A",
+                "regions": dict(region_map),
+                "categories": dict(category_map),
+                "top_subjects": top_subjects,
+            }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kashyap's Library</title>
-    <link rel="stylesheet" href="/static/style.css?v=12">
+    <link rel="stylesheet" href="/static/style.css?v=24">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -12,8 +12,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>Kashyap's Library 📚</h1>
-            <p>Curating a universe of stories, one book at a time</p>
+            <h1><span class="gradient-text">Kashyap's Library</span> 📚</h1>
+            <p>Building a repository of knowledge, one book at a time</p>
         </header>
 
         <main>
@@ -31,7 +31,10 @@
                 </div>
             </div>
             <div class="wishlist-section">
-                <h2>Your Wishlist</h2>
+                <div class="section-header">
+                    <h2>To-Read List</h2>
+                    <a href="/static/stats.html" class="stats-link">View Stats 📊</a>
+                </div>
                 <div id="wishlist" class="wishlist-grid">
                     <!-- Wishlist items will be injected here -->
                 </div>
@@ -75,6 +78,6 @@
         <span id="adminLogout" class="admin-unlock hidden" title="Logout">🔓</span>
     </footer>
 
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=2"></script>
 </body>
 </html>

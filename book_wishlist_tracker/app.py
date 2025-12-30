@@ -145,6 +145,14 @@ def add_book(selection: BookSelection) -> dict:
         raise HTTPException(status_code=500, detail=msg)
 
 
+@app.get("/api/stats")
+def get_stats() -> dict:
+    """
+    Get aggregated statistics for charts.
+    """
+    return db_client.get_stats()
+
+
 @app.get("/api/wishlist")
 def get_wishlist(
     page_number: int = Query(1, alias="page"), page_size: int = Query(10, alias="size")
