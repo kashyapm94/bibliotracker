@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kashyap's Library</title>
-    <link rel="stylesheet" href="/static/style.css?v=8">
+    <link rel="stylesheet" href="/static/style.css?v=12">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
         </header>
 
         <main>
-            <div class="search-card">
+            <div class="search-card hidden" id="searchSection">
                 <div class="input-group">
                     <input type="text" id="searchInput" placeholder="Search for a book..." autocomplete="off">
                     <div class="search-icon">🔍</div>
@@ -69,6 +69,11 @@
             </div>
         </div>
     </div>
+
+    <footer class="site-footer">
+        <span id="adminLogin" class="admin-lock" title="Admin Login">🔒</span>
+        <span id="adminLogout" class="admin-unlock hidden" title="Logout">🔓</span>
+    </footer>
 
     <script src="/static/script.js"></script>
 </body>

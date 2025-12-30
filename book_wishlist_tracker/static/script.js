@@ -12,7 +12,10 @@ let currentPage = 1;
 const pageSize = 10;
 
 // Initial load
-document.addEventListener('DOMContentLoaded', () => fetchWishlist(1));
+document.addEventListener('DOMContentLoaded', () => {
+    fetchWishlist(1);
+    checkAdmin();
+});
 
 async function fetchWishlist(page = 1) {
     currentPage = page;
@@ -160,7 +163,10 @@ async function selectBook(book) {
 
         const res = await fetch('/api/add', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-admin-password': adminPassword || ''
+            },
             body: JSON.stringify(payload)
         });
 
@@ -217,6 +223,53 @@ detailsModal.addEventListener('click', (e) => {
     if (e.target === detailsModal) {
         detailsModal.classList.add('hidden');
     }
+});
+
+// Admin Auth Logic
+const searchSection = document.getElementById('searchSection');
+const adminLoginBtn = document.getElementById('adminLogin');
+const adminLogoutBtn = document.getElementById('adminLogout');
+
+let adminPassword = null;
+
+function checkAdmin() {
+    if (adminPassword) {
+        searchSection.classList.remove('hidden');
+        adminLoginBtn.classList.add('hidden');
+        adminLogoutBtn.classList.remove('hidden');
+    } else {
+        searchSection.classList.add('hidden');
+        adminLoginBtn.classList.remove('hidden');
+        adminLogoutBtn.classList.add('hidden');
+    }
+}
+
+adminLoginBtn.addEventListener('click', async () => {
+    const pwd = prompt("Enter Admin Password:");
+    if (!pwd) return;
+
+    try {
+        const res = await fetch('/api/verify-admin', {
+            method: 'POST',
+            headers: { 'x-admin-password': pwd }
+        });
+
+        if (res.ok) {
+            adminPassword = pwd;
+            checkAdmin();
+            showToast("Logged in as Admin");
+        } else {
+            showToast("Invalid Password", true);
+        }
+    } catch (error) {
+        showToast("Error verifying password", true);
+    }
+});
+
+adminLogoutBtn.addEventListener('click', () => {
+    adminPassword = null;
+    checkAdmin();
+    showToast("Logged Out");
 });
 
 // Close dropdown if clicked outside

@@ -17,3 +17,4 @@ class Config:
     DB_USER: str = os.getenv("POSTGRES_USERNAME", "postgres")
     DB_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "")
     PERPLEXITY_API_KEY: str = os.getenv("PERPLEXITY_API_KEY", "")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")

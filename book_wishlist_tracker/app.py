@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -29,6 +29,15 @@ class BookSelection(BaseModel):
     title: str
     authors_str: str
     subjects: list[str]
+
+
+async def verify_admin(x_admin_password: str = Header(None)):
+    """
+    Verify the admin password provided in the header.
+    """
+    if x_admin_password != config.ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid admin password")
+    return True
 
 
 @app.get("/", response_class=HTMLResponse, response_model=None)
@@ -83,7 +92,15 @@ def search_books(query_string: str = Query(..., alias="q")) -> list[dict]:
     return formatted
 
 
-@app.post("/api/add")
+@app.post("/api/verify-admin", dependencies=[Depends(verify_admin)])
+def verify_admin_status() -> dict:
+    """
+    Verify if the provided admin password is correct.
+    """
+    return {"status": "ok"}
+
+
+@app.post("/api/add", dependencies=[Depends(verify_admin)])
 def add_book(selection: BookSelection) -> dict:
     """
     Add a selected book to the wishlist. Fetches rich metadata using AI.
