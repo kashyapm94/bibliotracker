@@ -2,6 +2,12 @@
 
 A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your wishlist through an interactive dashboard.
 
+<div align="center">
+  <video src="demo/demo.mp4" controls width="100%"></video>
+  <br/>
+  <a href="demo/demo.mp4">Watch the Demo Video</a>
+</div>
+
 ## ✨ Features
 
 ### 🧠 AI-Powered Intelligence
