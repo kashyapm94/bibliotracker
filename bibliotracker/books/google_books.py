@@ -4,8 +4,6 @@ import httpx
 
 from bibliotracker.config import Config
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +39,7 @@ class GoogleBooksClient:
             "maxResults": min(max_results, 40),  # API limit is 40
             "startIndex": start_index,
             "printType": "books",
+            "langRestrict": "en",
         }
         if self.api_key:
             params["key"] = self.api_key
@@ -58,65 +57,3 @@ class GoogleBooksClient:
 
     def close(self) -> None:
         self.client.close()
-
-
-def main() -> None:
-    """
-    Main execution entry point for interactive search.
-    """
-    print("--- Google Books Search Tool ---")
-    query = input("Enter book name to search: ").strip()
-    if not query:
-        print("Empty query. Exiting.")
-        return
-
-    client = GoogleBooksClient()
-    start_index = 0
-    page_size = 10
-
-    try:
-        while True:
-            print(f"\nSearching for '{query}' (Page {start_index // page_size + 1})...")
-            results = client.search_books(
-                query, max_results=page_size, start_index=start_index
-            )
-
-            total_items = results.get("totalItems", 0)
-            items = results.get("items", [])
-
-            if not items:
-                print("No more books found.")
-                break
-
-            print(
-                f"\nFound {total_items} total matches. Showing results {start_index + 1} to {start_index + len(items)}:\n"
-            )
-
-            for i, item in enumerate(items, 1):
-                info = item.get("volumeInfo", {})
-                title = info.get("title", "Unknown Title")
-                authors = ", ".join(info.get("authors", ["Unknown Author"]))
-                published_date = info.get("publishedDate", "N/A")
-                print(f"{start_index + i}. {title} by {authors} ({published_date})")
-
-            # Check if we've reached the end
-            if start_index + len(items) >= total_items:
-                print("\nEnd of results.")
-                break
-
-            choice = input("\nShow next 10 results? (y/n): ").strip().lower()
-            if choice != "y":
-                print("Exiting search.")
-                break
-
-            start_index += page_size
-
-    finally:
-        client.close()
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\nSearch cancelled.")

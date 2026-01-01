@@ -43,7 +43,7 @@ class BookLookupService:
                 search_query, max_results=results_limit, start_index=start_index
             )
 
-            items = data.get("items", [])
+            items = data.get("items") or []
             total_matches = data.get("totalItems", 0)
 
             # Normalize results to match standard dictionary format
@@ -51,15 +51,40 @@ class BookLookupService:
             normalized_results = []
             for item in items:
                 info = item.get("volumeInfo", {})
+                lang = info.get("language", "").lower()
+                title = info.get("title")
+                # Ensure authors is a list of non-null strings
+                authors = [str(a) for a in (info.get("authors") or []) if a]
+
+                # Detailed logging for debugging language issues
+                logger.debug(f"Checking book: '{title}' Language: '{lang}'")
+
+                # Strict check for English language (allow en-US, en-GB, etc.)
+                if not lang.startswith("en"):
+                    logger.info(f"Skipping non-English book: '{title}' ({lang})")
+                    continue
+
+                if not title:
+                    logger.warning(
+                        f"Skipping book with missing title. ID: {item.get('id')}"
+                    )
+                    continue
+
                 normalized_results.append(
                     {
-                        "title": info.get("title"),
-                        "authors": info.get("authors", []),
+                        "title": title,
+                        "authors": authors,
                         "key": item.get("id"),  # Using Google Books ID as key
                         "subjects": info.get("categories", []),
                     }
                 )
 
+            logger.info(
+                f"Search results after filtering: {len(normalized_results)}/{len(items)}"
+            )
+
+            # Note: We return the total_matches from API, but items is filtered.
+            # This is standard for search APIs where real-time filtering happens.
             return normalized_results, total_matches
         except Exception as error:
             logger.error(f"Google Books Search Error: {error}")

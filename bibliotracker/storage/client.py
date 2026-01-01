@@ -93,7 +93,7 @@ class PostgresClient:
                 session.commit()
                 # session.refresh(new_book) # Optional, if we needed the ID back
 
-            return True, "Book added successfully to Database."
+            return True, "Added to the To-Read List"
         except Exception as error:
             logger.error(f"DB Error: {error}")
             return False, str(error)

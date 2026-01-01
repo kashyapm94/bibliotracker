@@ -16,6 +16,7 @@ def test_search_books_success(mocker: MockerFixture) -> None:
                     "title": "Test Book",
                     "authors": ["Test Author"],
                     "categories": ["Fiction"],
+                    "language": "en",
                 },
             }
         ],
