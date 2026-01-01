@@ -8,14 +8,18 @@ from fastapi.testclient import TestClient
 os.environ["PERPLEXITY_API_KEY"] = "dummy_key"
 os.environ["ADMIN_PASSWORD"] = "secret_password"
 os.environ["POSTGRES_DB"] = "test_db"
+os.environ["POSTGRES_HOST"] = "localhost"
+os.environ["POSTGRES_PORT"] = "5432"
+os.environ["POSTGRES_USERNAME"] = "postgres"
+os.environ["POSTGRES_PASSWORD"] = "password"
 
 # Patch DB Client globally to safely import app without DB connection
-patcher_db = patch("books_wishlist_tracker.storage.client.PostgresClient")
+patcher_db = patch("bibliotracker.storage.client.PostgresClient")
 MockPostgresClient = patcher_db.start()
 MockPostgresClient.return_value = MagicMock()
 
 # Import app modules
-from books_wishlist_tracker.app import app, db_client
+from bibliotracker.app import app, db_client
 
 
 @pytest.fixture
@@ -28,11 +32,11 @@ def mock_db_client() -> MagicMock:
 def mock_book_service_for_app(mocker) -> MagicMock:
     """
     Mock the book_service INSTANCE in the app module for integration tests.
-    This does NOT affect the class definition in books_wishlist_tracker.books.service,
+    This does NOT affect the class definition in bibliotracker.books.service,
     so unit tests can still use the real class.
     """
     mock_service = mocker.Mock()
-    mocker.patch("books_wishlist_tracker.app.book_service", mock_service)
+    mocker.patch("bibliotracker.app.book_service", mock_service)
     return mock_service
 
 

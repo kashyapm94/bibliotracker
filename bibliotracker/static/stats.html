@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Stats 📊</title>
+    <link rel="stylesheet" href="/static/style.css?v=24">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="gradient-text">Library Statistics</span> 📊</h1>
+            <p>Visualizing the reading journey</p>
+            <a href="/" class="back-link">← Back to Library</a>
+        </header>
+
+        <main>
+            <!-- Summary Cards -->
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value" id="totalBooks">0</div>
+                    <div class="stat-label">Total Books</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✍️</div>
+                    <div class="stat-value" id="uniqueAuthors">0</div>
+                    <div class="stat-label">Unique Authors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏷️</div>
+                    <div class="stat-value" id="topSubject">N/A</div>
+                    <div class="stat-label">Top Subject</div>
+                </div>
+            </div>
+
+            <div class="stats-container">
+            <div class="chart-card">
+                <h2>Region Distribution</h2>
+                <div class="chart-wrapper">
+                    <canvas id="regionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2>Fiction vs Non-Fiction</h2>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card full-width">
+                <h2>Top 5 Subjects</h2>
+                <div class="chart-wrapper">
+                    <canvas id="subjectsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book List Modal -->
+        <div id="statsModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal" id="closeModal">&times;</span>
+                <h2 id="modalHeader" class="modal-title">Books</h2>
+                <div id="modalList" class="modal-book-list">
+                    <!-- Books injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                renderCharts(data);
+            } catch (error) {
+                console.error("Error loading stats:", error);
+            }
+        }
+
+        const modal = document.getElementById('statsModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalList = document.getElementById('modalList');
+
+        function openModal(title, books) {
+            modalHeader.textContent = title;
+            modalList.innerHTML = '';
+            
+            if (!books || books.length === 0) {
+                modalList.innerHTML = '<p>No books found.</p>';
+            } else {
+                const ul = document.createElement('ul');
+                books.forEach(b => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${b.title}</strong> by ${b.author}`;
+                    ul.appendChild(li);
+                });
+                modalList.appendChild(ul);
+            }
+            modal.classList.remove('hidden');
+        }
+
+        closeModal.onclick = () => modal.classList.add('hidden');
+        window.onclick = (e) => {
+            if (e.target == modal) modal.classList.add('hidden');
+        }
+
+        // Configure Chart.js defaults for better visibility
+        // Configure Chart.js defaults for better visibility
+        Chart.defaults.color = '#000000'; /* Force Black for visibility */
+        Chart.defaults.font.family = 'Outfit, sans-serif';
+
+        function renderCharts(data) {
+            // Populate summary cards
+            document.getElementById('totalBooks').textContent = data.total_books;
+            document.getElementById('uniqueAuthors').textContent = data.unique_authors;
+            document.getElementById('topSubject').textContent = data.top_subject;
+
+            // Helpers to get counts
+            const regionLabels = Object.keys(data.regions);
+            const regionCounts = Object.values(data.regions).map(list => list.length);
+
+            const categoryLabels = Object.keys(data.categories);
+            const categoryCounts = Object.values(data.categories).map(list => list.length);
+
+            const subjectLabels = Object.keys(data.top_subjects);
+            const subjectCounts = Object.values(data.top_subjects).map(list => list.length);
+
+            // Region Chart (Bar)
+            const regionCtx = document.getElementById('regionChart').getContext('2d');
+            new Chart(regionCtx, {
+                type: 'bar',
+                data: {
+                    labels: regionLabels,
+                    datasets: [{
+                        label: 'Books by Region',
+                        data: regionCounts,
+                        backgroundColor: 'rgba(168, 85, 247, 0.6)',
+                        borderColor: 'rgba(168, 85, 247, 0.9)',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = regionLabels[index];
+                            const books = data.regions[label];
+                            openModal(`Books on ${label}`, books);
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false, labels: { color: '#000000' } } // Force Black
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#000000' }, // Force Black
+                            grid: { color: 'rgba(0,0,0,0.1)' } 
+                        },
+                        x: { 
+                            ticks: { color: '#000000' }, // Force Black
+                            grid: { color: 'rgba(0,0,0,0.05)' } 
+                        }
+                    }
+                }
+            });
+
+            // Category Chart (Doughnut)
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryCounts,
+                        backgroundColor: [
+                            'rgba(168, 85, 247, 0.6)',
+                            'rgba(20, 184, 166, 0.6)',
+                            'rgba(251, 146, 60, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(168, 85, 247, 0.9)',
+                            'rgba(20, 184, 166, 0.9)',
+                            'rgba(251, 146, 60, 0.9)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = categoryLabels[index];
+                            const books = data.categories[label];
+                            openModal(`${label} Books`, books);
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { color: '#000000', font: { weight: 'bold' } } // Force Black & Bold
+                        }
+                    }
+                }
+            });
+
+            // Subjects Chart (Horizontal Bar)
+            const subjectsCtx = document.getElementById('subjectsChart').getContext('2d');
+            new Chart(subjectsCtx, {
+                type: 'bar',
+                data: {
+                    labels: subjectLabels,
+                    datasets: [{
+                        label: 'Books by Subject',
+                        data: subjectCounts,
+                        backgroundColor: [
+                            'rgba(168, 85, 247, 0.6)',
+                            'rgba(20, 184, 166, 0.6)',
+                            'rgba(251, 146, 60, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(236, 72, 153, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(168, 85, 247, 0.9)',
+                            'rgba(20, 184, 166, 0.9)',
+                            'rgba(251, 146, 60, 0.9)',
+                            'rgba(59, 130, 246, 0.9)',
+                            'rgba(236, 72, 153, 0.9)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = subjectLabels[index];
+                            const books = data.top_subjects[label];
+                            openModal(`Books about ${label}`, books);
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false, labels: { color: '#000000' } } // Force Black
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#000000' }, // Force Black
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: '#000000' }, // Force Black
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchStats);
+    </script>
+</body>
+</html>
