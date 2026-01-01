@@ -1,6 +1,10 @@
+import logging
+
 import httpx
 
 from bibliotracker.ai import BookAI
+
+logger = logging.getLogger(__name__)
 
 
 class BookLookupService:
@@ -60,7 +64,7 @@ class BookLookupService:
 
             return normalized_results, total_matches
         except Exception as error:
-            print(f"OpenLibrary Search Error: {error}")
+            logger.error(f"OpenLibrary Search Error: {error}")
             return [], 0
 
     def get_book_metadata(self, book_title: str, book_author: str) -> dict:

@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
@@ -8,6 +9,12 @@ from pydantic import BaseModel
 from bibliotracker.books.service import BookLookupService
 from bibliotracker.config import Config
 from bibliotracker.storage.client import PostgresClient
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -56,19 +63,22 @@ async def read_root() -> HTMLResponse | str:
 
 
 @app.get("/api/search")
-def search_books(query_string: str = Query(..., alias="q")) -> list[dict]:
+def search_books(
+    query_string: str = Query(..., alias="q"), page: int = Query(1, alias="page")
+) -> list[dict]:
     """
     Search for books using the OpenLibrary service.
 
     Args:
         query_string (str): The search query provided by the user.
+        page (int): Page number for pagination.
 
     Returns:
         list[dict]: A list of formatted book objects for the frontend.
     """
     if not query_string:
         return []
-    raw_results, _ = book_service.search_books(query_string)
+    raw_results, _ = book_service.search_books(query_string, page_number=page)
 
     # Format for frontend
     # Frontend expects authors to be a string, and sends it back as authors_str
@@ -114,7 +124,7 @@ def add_book(selection: BookSelection) -> dict:
     Raises:
         HTTPException: If book details cannot be fetched or DB addition fails.
     """
-    print(f"Adding book: {selection.title}")
+    logger.info(f"Adding book: {selection.title}")
 
     # Fetch details via AI (single source of truth now)
     # We assume 'authors_str' is passed, or we can use the author list from search result if available.
@@ -141,7 +151,7 @@ def add_book(selection: BookSelection) -> dict:
     if added:
         return {"status": "success", "message": msg}
     else:
-        print(f"DB Add Failed: {msg}")
+        logger.error(f"DB Add Failed: {msg}")
         raise HTTPException(status_code=500, detail=msg)
 
 

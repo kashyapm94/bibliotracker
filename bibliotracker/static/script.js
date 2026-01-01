@@ -7,7 +7,13 @@ const prevBtn = document.getElementById('prevPage');
 const nextBtn = document.getElementById('nextPage');
 const pageInfo = document.getElementById('pageInfo');
 
+// Search Pagination State
 let debounceTimer;
+let currentSearchPage = 1;
+let isSearching = false;
+let hasMoreResults = true;
+let currentQuery = '';
+
 let currentPage = 1;
 const pageSize = 10;
 
@@ -106,24 +112,39 @@ searchInput.addEventListener('input', (e) => {
     }
 
     debounceTimer = setTimeout(() => {
-        fetchResults(query);
+        currentQuery = query;
+        currentSearchPage = 1;
+        hasMoreResults = true;
+        fetchResults(query, 1);
     }, 300);
 });
 
-async function fetchResults(query) {
+async function fetchResults(query, page = 1) {
+    if (isSearching) return;
+    isSearching = true;
+
     try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}`);
         const data = await res.json();
-        renderDropdown(data);
+        
+        if (data.length === 0) {
+            hasMoreResults = false;
+        }
+        
+        renderDropdown(data, page);
     } catch (error) {
         console.error("Error fetching results:", error);
+    } finally {
+        isSearching = false;
     }
 }
 
-function renderDropdown(results) {
-    dropdown.innerHTML = '';
+function renderDropdown(results, page) {
+    if (page === 1) {
+        dropdown.innerHTML = '';
+    }
     
-    if (results.length === 0) {
+    if (results.length === 0 && page === 1) {
         const empty = document.createElement('div');
         empty.className = 'dropdown-item';
         empty.innerHTML = '<span class="item-meta">No results found</span>';
@@ -141,10 +162,33 @@ function renderDropdown(results) {
             item.addEventListener('click', () => selectBook(book));
             dropdown.appendChild(item);
         });
+        
+        // Setup Infinite Scroll on the dropdown container provided it has content
+        if (page === 1 && results.length > 0) {
+             // Ensure we don't attach multiple listeners if called multiple times (though page 1 implies fresh start)
+             // But actually it's cleaner to attach once globally or ensure we don't duplicate.
+             // Since we clear innerHTML, we might lose the scroll position or state, but the listener is on the container 'dropdown'
+             // which is NOT cleared (it's a div in HTML). So we should attach the listener ONCE outside or check it here.
+             // Better to attach it once in global scope, but we need closure over current variables.
+             // Actually, Global variables are used, so global listener is fine.
+        }
     }
     
-    dropdown.classList.remove('hidden');
+    if (page === 1) {
+        dropdown.classList.remove('hidden');
+        dropdown.scrollTop = 0;
+    }
 }
+
+// Dropdown Infinite Scroll
+dropdown.addEventListener('scroll', () => {
+    if (dropdown.scrollTop + dropdown.clientHeight >= dropdown.scrollHeight - 50) {
+        if (hasMoreResults && !isSearching) {
+            currentSearchPage++;
+            fetchResults(currentQuery, currentSearchPage);
+        }
+    }
+});
 
 async function selectBook(book) {
     // UI Feedback

@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 
 from sqlalchemy import create_engine, select
@@ -5,6 +6,8 @@ from sqlalchemy.orm import sessionmaker
 
 from bibliotracker.config import Config
 from bibliotracker.storage.models import Base, Book
+
+logger = logging.getLogger(__name__)
 
 
 class PostgresClient:
@@ -92,7 +95,7 @@ class PostgresClient:
 
             return True, "Book added successfully to Database."
         except Exception as error:
-            print(f"DB Error: {error}")
+            logger.error(f"DB Error: {error}")
             return False, str(error)
 
     def get_all_books(

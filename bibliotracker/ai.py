@@ -1,9 +1,12 @@
 import json
+import logging
 import re
 
 from perplexity import Perplexity
 
 from bibliotracker.config import Config
+
+logger = logging.getLogger(__name__)
 
 
 class BookAI:
@@ -35,7 +38,7 @@ class BookAI:
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"Perplexity Query Error: {e}")
+            logger.error(f"Perplexity Query Error: {e}")
             return ""
 
     def _clean_json(self, raw_content: str) -> str:
@@ -112,5 +115,5 @@ class BookAI:
                 details["description"] = self._clean_description(details["description"])
             return details
         except Exception as e:
-            print(f"Error parsing book details: {e}")
+            logger.error(f"Error parsing book details: {e}")
             return {}
