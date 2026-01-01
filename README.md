@@ -1,4 +1,5 @@
-# Bibliotracker
+# Book Wishlist Tracker
+![Unit Tests](https://github.com/kashyapm94/bibliotracker/actions/workflows/unittest.yml/badge.svg)
 
 A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your wishlist through an interactive dashboard.
 
