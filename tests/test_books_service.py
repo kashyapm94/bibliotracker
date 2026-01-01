@@ -1,6 +1,6 @@
 from pytest_mock import MockerFixture
 
-from books_wishlist_tracker.books.service import BookLookupService
+from bibliotracker.books.service import BookLookupService
 
 
 def test_search_books_success(mocker: MockerFixture) -> None:
@@ -50,7 +50,7 @@ def test_get_book_metadata(mocker: MockerFixture) -> None:
     }
 
     # Patch the BookAI CLASS in the service module so __init__ uses our mock
-    mocker.patch("books_wishlist_tracker.books.service.BookAI", return_value=mock_ai)
+    mocker.patch("bibliotracker.books.service.BookAI", return_value=mock_ai)
 
     service = BookLookupService()
     # service.ai should be our mock_ai instance (due to return_value above)

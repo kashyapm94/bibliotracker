@@ -5,9 +5,9 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from books_wishlist_tracker.books.service import BookLookupService
-from books_wishlist_tracker.config import Config
-from books_wishlist_tracker.storage.client import PostgresClient
+from bibliotracker.books.service import BookLookupService
+from bibliotracker.config import Config
+from bibliotracker.storage.client import PostgresClient
 
 app = FastAPI()
 

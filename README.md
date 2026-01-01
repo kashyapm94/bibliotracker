@@ -1,4 +1,4 @@
-# Book Wishlist Tracker
+# Bibliotracker
 
 A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your wishlist through an interactive dashboard.
 
@@ -97,14 +97,14 @@ A modern, intelligent web application to track your **to-read list**. It goes be
 Start the backend server:
 
 ```bash
-uv run uvicorn books_wishlist_tracker.app:app --reload
+uv run uvicorn bibliotracker.app:app --reload
 ```
 
 Open your browser and navigate to: **http://127.0.0.1:8000**
 
 ## Project Structure
 
-- `books_wishlist_tracker/`
+- `bibliotracker/`
     - `app.py`: Main FastAPI entry point and API routes.
     - `ai.py`: Perplexity AI integration service.
     - `books/`: Open Library integration service.

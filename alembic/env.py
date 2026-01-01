@@ -9,8 +9,8 @@ from alembic import context
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from books_wishlist_tracker.config import Config
-from books_wishlist_tracker.storage.models import Base
+from bibliotracker.config import Config
+from bibliotracker.storage.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

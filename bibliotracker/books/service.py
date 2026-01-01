@@ -1,6 +1,6 @@
 import httpx
 
-from books_wishlist_tracker.ai import BookAI
+from bibliotracker.ai import BookAI
 
 
 class BookLookupService:

@@ -3,8 +3,8 @@ from collections import defaultdict
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from books_wishlist_tracker.config import Config
-from books_wishlist_tracker.storage.models import Base, Book
+from bibliotracker.config import Config
+from bibliotracker.storage.models import Base, Book
 
 
 class PostgresClient:

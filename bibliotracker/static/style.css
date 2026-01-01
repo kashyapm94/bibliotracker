@@ -710,3 +710,90 @@ input:focus {
     margin-top: 1.5rem;
     font-weight: 500;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    body {
+        padding-top: 40px;
+    }
+
+    .container {
+        padding: 0 1.5rem;
+    }
+
+    /* Header adjustments */
+    header h1 {
+        font-size: 2.2rem;
+    }
+    
+    header p {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Search card adjustments */
+    .search-card {
+        margin-top: 1rem;
+    }
+
+    input {
+        padding: 1rem 1.5rem;
+        padding-right: 3rem;
+        font-size: 1rem;
+    }
+
+    .search-icon {
+        right: 1.2rem;
+        font-size: 1rem;
+    }
+
+    /* Section Header: Stack items */
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .wishlist-section h2 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-link {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem;
+    }
+
+    /* Grid adjustments */
+    .wishlist-grid {
+        grid-template-columns: 1fr; /* Single column on mobile */
+        gap: 1.5rem;
+    }
+
+    /* Modal adjustments */
+    .modal-content {
+        padding: 1.5rem;
+        width: 95%;
+        border-radius: 20px;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+    }
+
+    .modal-meta-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .toast {
+        width: 90%;
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        bottom: 20px;
+    }
+}

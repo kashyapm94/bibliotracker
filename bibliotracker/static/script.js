@@ -9,7 +9,7 @@ const pageInfo = document.getElementById('pageInfo');
 
 let debounceTimer;
 let currentPage = 1;
-const pageSize = 15;
+const pageSize = 10;
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {

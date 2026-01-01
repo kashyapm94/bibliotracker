@@ -3,7 +3,7 @@ import re
 
 from perplexity import Perplexity
 
-from books_wishlist_tracker.config import Config
+from bibliotracker.config import Config
 
 
 class BookAI:
