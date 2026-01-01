@@ -19,6 +19,8 @@ class Config:
     DB_PASSWORD: str = os.environ["POSTGRES_PASSWORD"]
     PERPLEXITY_API_KEY: str = os.environ["PERPLEXITY_API_KEY"]
     ADMIN_PASSWORD: str = os.environ["ADMIN_PASSWORD"]
+    GOOGLE_BOOKS_API_KEY: str | None = os.environ.get("GOOGLE_BOOKS_API_KEY")
+    REFERER_URL: str = os.environ.get("REFERER_URL", "http://127.0.0.1:8000/")
 
     @computed_field
     @property

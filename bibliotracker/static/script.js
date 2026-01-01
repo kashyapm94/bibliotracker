@@ -326,7 +326,7 @@ async function performLogin() {
         if (res.ok) {
             adminPassword = pwd;
             checkAdmin();
-            showToast("Logged in as Admin");
+            showToast("Logged in");
             loginModal.classList.add('hidden');
         } else {
             // Show inline error instead of toast

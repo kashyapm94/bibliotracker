@@ -18,7 +18,14 @@ def test_search_api_results(
     client: TestClient, mock_book_service_for_app: MagicMock
 ) -> None:
     mock_book_service_for_app.search_books.return_value = (
-        [{"title": "B1", "authors": ["A1"], "key": "k1", "subjects": []}],
+        [
+            {
+                "title": "B1",
+                "authors": ["A1"],
+                "key": "k1",
+                "subjects": [],
+            }
+        ],
         1,
     )
 
@@ -73,7 +80,12 @@ def test_add_book_success(
     mock_db_client.add_book.return_value = (True, "Added")
 
     headers = {"x-admin-password": "secret_password"}
-    payload = {"book_key": "k1", "title": "T1", "authors_str": "A1", "subjects": []}
+    payload = {
+        "book_key": "k1",
+        "title": "T1",
+        "authors_str": "A1",
+        "subjects": [],
+    }
 
     response = client.post("/api/add", json=payload, headers=headers)
     assert response.status_code == 200

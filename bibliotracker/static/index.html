@@ -12,6 +12,10 @@
 <body>
     <div class="container">
         <header>
+            <div class="admin-controls">
+                <span id="adminLogin" class="admin-lock" title="Admin Login">🔒</span>
+                <span id="adminLogout" class="admin-unlock hidden" title="Logout">🔓</span>
+            </div>
             <h1><span class="gradient-text">Bibliotracker</span> 📚</h1>
             <p>Build a repository of knowledge, one book at a time</p>
         </header>
@@ -33,7 +37,7 @@
             <div class="wishlist-section">
                 <div class="section-header">
                     <h2>To-Read List</h2>
-                    <a href="/static/stats.html" class="stats-link">View Stats 📊</a>
+                    <a href="/static/stats.html" class="stats-link" title="Check out the stats of the to-read list">View Stats 📊</a>
                 </div>
                 <div id="wishlist" class="wishlist-grid">
                     <!-- Wishlist items will be injected here -->
@@ -92,8 +96,6 @@
     </div>
 
     <footer class="site-footer">
-        <span id="adminLogin" class="admin-lock" title="Admin Login">🔒</span>
-        <span id="adminLogout" class="admin-unlock hidden" title="Logout">🔓</span>
     </footer>
 
     <script src="/static/script.js?v=2"></script>

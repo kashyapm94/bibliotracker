@@ -1,8 +1,8 @@
 import logging
 
-import httpx
-
 from bibliotracker.ai import BookAI
+from bibliotracker.books.google_books import GoogleBooksClient
+from bibliotracker.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -14,16 +14,17 @@ class BookLookupService:
 
     def __init__(self) -> None:
         """
-        Initialize the BookLookupService with an AI client and OpenLibrary URL.
+        Initialize the BookLookupService with an AI client and Google Books client.
         """
         self.ai = BookAI()
-        self.search_url = "https://openlibrary.org/search.json"
+        config = Config()
+        self.google_client = GoogleBooksClient(api_key=config.GOOGLE_BOOKS_API_KEY)
 
     def search_books(
         self, search_query: str, page_number: int = 1, results_limit: int = 20
     ) -> tuple[list[dict], int]:
         """
-        Search for books matching the query using the OpenLibrary API.
+        Search for books matching the query using the Google Books API.
 
         Args:
             search_query (str): The book title or keywords to search for.
@@ -34,37 +35,34 @@ class BookLookupService:
             tuple[list[dict], int]: A tuple containing a list of normalized book results
                                    and the total number of books found.
         """
-        params = {
-            "q": f"{search_query} language:eng",
-            "page": page_number,
-            "limit": results_limit,
-            "fields": "key,title,author_name,subject",
-        }
+        # Calculate start_index for Google Books (0-based)
+        start_index = (page_number - 1) * results_limit
 
         try:
-            response = httpx.get(self.search_url, params=params, timeout=10.0)
-            response.raise_for_status()
-            data = response.json()
+            data = self.google_client.search_books(
+                search_query, max_results=results_limit, start_index=start_index
+            )
 
-            docs = data.get("docs", [])
-            total_matches = data.get("numFound", 0)
+            items = data.get("items", [])
+            total_matches = data.get("totalItems", 0)
 
             # Normalize results to match standard dictionary format
             # { "title": ..., "authors": [...], "key": ... }
             normalized_results = []
-            for doc in docs:
+            for item in items:
+                info = item.get("volumeInfo", {})
                 normalized_results.append(
                     {
-                        "title": doc.get("title"),
-                        "authors": doc.get("author_name", []),
-                        "key": doc.get("key"),
-                        "subjects": doc.get("subject", []),
+                        "title": info.get("title"),
+                        "authors": info.get("authors", []),
+                        "key": item.get("id"),  # Using Google Books ID as key
+                        "subjects": info.get("categories", []),
                     }
                 )
 
             return normalized_results, total_matches
         except Exception as error:
-            logger.error(f"OpenLibrary Search Error: {error}")
+            logger.error(f"Google Books Search Error: {error}")
             return [], 0
 
     def get_book_metadata(self, book_title: str, book_author: str) -> dict:

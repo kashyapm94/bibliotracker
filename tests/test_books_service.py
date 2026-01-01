@@ -1,24 +1,32 @@
+import pytest
 from pytest_mock import MockerFixture
 
 from bibliotracker.books.service import BookLookupService
 
 
 def test_search_books_success(mocker: MockerFixture) -> None:
-    # Mock httpx.get
-    mock_response = mocker.Mock()
-    mock_response.json.return_value = {
-        "numFound": 1,
-        "docs": [
+    # Mock GoogleBooksClient instance
+    mock_client_instance = mocker.Mock()
+    mock_client_instance.search_books.return_value = {
+        "totalItems": 1,
+        "items": [
             {
-                "title": "Test Book",
-                "author_name": ["Test Author"],
-                "key": "/works/OL123",
-                "subject": ["Fiction"],
+                "id": "k1",
+                "volumeInfo": {
+                    "title": "Test Book",
+                    "authors": ["Test Author"],
+                    "categories": ["Fiction"],
+                },
             }
         ],
     }
-    mock_response.raise_for_status.return_value = None
-    mocker.patch("httpx.get", return_value=mock_response)
+
+    # Patch modules
+    mocker.patch(
+        "bibliotracker.books.service.GoogleBooksClient",
+        return_value=mock_client_instance,
+    )
+    mocker.patch("bibliotracker.books.service.Config")
 
     service = BookLookupService()
     results, count = service.search_books("test")
@@ -27,11 +35,19 @@ def test_search_books_success(mocker: MockerFixture) -> None:
     assert len(results) == 1
     assert results[0]["title"] == "Test Book"
     assert results[0]["authors"] == ["Test Author"]
+    assert results[0]["key"] == "k1"
 
 
 def test_search_books_failure(mocker: MockerFixture) -> None:
     # Mock exception
-    mocker.patch("httpx.get", side_effect=Exception("API Error"))
+    mock_client_instance = mocker.Mock()
+    mock_client_instance.search_books.side_effect = Exception("API Error")
+
+    mocker.patch(
+        "bibliotracker.books.service.GoogleBooksClient",
+        return_value=mock_client_instance,
+    )
+    mocker.patch("bibliotracker.books.service.Config")
 
     service = BookLookupService()
     results, count = service.search_books("test")
@@ -49,11 +65,11 @@ def test_get_book_metadata(mocker: MockerFixture) -> None:
         "is_fiction": "Fiction",
     }
 
-    # Patch the BookAI CLASS in the service module so __init__ uses our mock
     mocker.patch("bibliotracker.books.service.BookAI", return_value=mock_ai)
+    # Also need to patch Config/GoogleBooksClient as they are init-ed
+    mocker.patch("bibliotracker.books.service.Config")
+    mocker.patch("bibliotracker.books.service.GoogleBooksClient")
 
     service = BookLookupService()
-    # service.ai should be our mock_ai instance (due to return_value above)
-
     details = service.get_book_metadata("Raw Title", "Author")
     assert details["title"] == "Clean Title"

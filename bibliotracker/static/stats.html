@@ -113,7 +113,8 @@
         }
 
         // Configure Chart.js defaults for better visibility
-        Chart.defaults.color = '#f8fafc';
+        // Configure Chart.js defaults for better visibility
+        Chart.defaults.color = '#000000'; /* Force Black for visibility */
         Chart.defaults.font.family = 'Outfit, sans-serif';
 
         function renderCharts(data) {
@@ -159,10 +160,18 @@
                         }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false, labels: { color: '#000000' } } // Force Black
                     },
                     scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#000000' }, // Force Black
+                            grid: { color: 'rgba(0,0,0,0.1)' } 
+                        },
+                        x: { 
+                            ticks: { color: '#000000' }, // Force Black
+                            grid: { color: 'rgba(0,0,0,0.05)' } 
+                        }
                     }
                 }
             });
@@ -200,7 +209,10 @@
                         }
                     },
                     plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { color: '#000000', font: { weight: 'bold' } } // Force Black & Bold
+                        }
                     }
                 }
             });
@@ -245,10 +257,18 @@
                         }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false, labels: { color: '#000000' } } // Force Black
                     },
                     scales: {
-                        x: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        x: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#000000' }, // Force Black
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: '#000000' }, // Force Black
+                            grid: { display: false }
+                        }
                     }
                 }
             });
