@@ -840,6 +840,10 @@ input:focus {
         gap: 1.5rem;
     }
 
+    .stats-container {
+        grid-template-columns: 1fr; /* Force single column to fit screen */
+        gap: 1.5rem;
+    }
 
     /* Modal adjustments */
     .modal-content {
