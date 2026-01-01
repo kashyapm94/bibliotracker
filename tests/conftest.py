@@ -8,6 +8,10 @@ from fastapi.testclient import TestClient
 os.environ["PERPLEXITY_API_KEY"] = "dummy_key"
 os.environ["ADMIN_PASSWORD"] = "secret_password"
 os.environ["POSTGRES_DB"] = "test_db"
+os.environ["POSTGRES_HOST"] = "localhost"
+os.environ["POSTGRES_PORT"] = "5432"
+os.environ["POSTGRES_USERNAME"] = "postgres"
+os.environ["POSTGRES_PASSWORD"] = "password"
 
 # Patch DB Client globally to safely import app without DB connection
 patcher_db = patch("bibliotracker.storage.client.PostgresClient")
