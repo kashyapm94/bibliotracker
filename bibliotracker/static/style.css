@@ -781,18 +781,21 @@ input:focus {
 
     /* Header adjustments */
     header h1 {
-        font-size: 3rem;
-        padding: 0 45px; /* Prevent collision with admin lock */
+        font-size: 2.2rem;
+        padding: 0 60px; /* Force clearance for lock icon */
+        line-height: 1.2;
+        margin-top: 0.5rem;
     }
     
     .admin-controls {
-        top: 0.8rem;
-        right: 0.8rem;
+        top: 0.5rem;
+        right: 0.5rem;
     }
 
     header p {
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-bottom: 2rem;
+        padding: 0.5rem 1.5rem;
     }
 
     /* Search card adjustments */
