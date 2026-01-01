@@ -1,4 +1,4 @@
-# Book Wishlist Tracker
+# Bibliotracker
 ![Unit Tests](https://github.com/kashyapm94/bibliotracker/actions/workflows/unittest.yml/badge.svg)
 
 A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your wishlist through an interactive dashboard.
@@ -24,7 +24,7 @@ A modern, intelligent web application to track your **to-read list**. It goes be
 - **Drill-Down Capability**: Click on any chart segment to see the specific list of books in that category.
 
 ### 🔎 Smart Search & Management
-- **Google Books Integration**: Powered by the **Google Books API** for comprehensive and accurate book searching.
+- **Google Books Integration**: Powered by the **Google Books API** for comprehensive and accurate book searching. **Strictly English-only results** to keep your suggestions relevant.
 - **Infinite Scroll**: Seamlessly browse through search results with automated pagination and infinite scrolling.
 - **Duplicate Prevention**: Intelligently prevents adding the same book twice (case-insensitive) to keep your list clean.
 - **Secure Admin**: Protected by a dedicated **Admin Login Modal** to control additions to your curated list.
