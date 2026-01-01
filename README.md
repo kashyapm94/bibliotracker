@@ -94,8 +94,8 @@ A modern, intelligent web application to track your **to-read list**. It goes be
     # AI & Search Configuration
     PERPLEXITY_API_KEY=pplx-xxxxxxxxxxxxxxxxxxxxxx
     GOOGLE_BOOKS_API_KEY=AIzaSyxxxxxxxxxxxxxxxxx
-    # For Google Books API (Local: http://localhost:8000, Prod: your_app_url)
-    REFERER_URL=http://localhost:8000
+    # For Google Books API (Local: http://127.0.0.1:8000, Prod: your_app_url)
+    REFERER_URL=http://127.0.0.1:8000
     
     # Security
     ADMIN_PASSWORD=secret_password

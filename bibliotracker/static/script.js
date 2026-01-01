@@ -15,7 +15,7 @@ let hasMoreResults = true;
 let currentQuery = '';
 
 let currentPage = 1;
-const pageSize = 10;
+const pageSize = 12;
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {

@@ -268,7 +268,7 @@ input:focus {
 /* Wishlist Section */
 .wishlist-section {
     margin-top: 5rem;
-    padding-bottom: 5rem;
+    padding-bottom: 2rem;
     width: 100%;
 }
 
@@ -310,10 +310,6 @@ input:focus {
     position: relative;
     overflow: hidden;
 }
-
-
-
-
 
 .book-card:hover {
     transform: translateY(-10px) scale(1.02);
@@ -415,7 +411,7 @@ input:focus {
     justify-content: center;
     align-items: center;
     gap: 2rem;
-    margin-top: 4rem;
+    margin-top: 3rem;
     animation: fadeIn 0.8s ease-out;
 }
 
@@ -591,8 +587,8 @@ input:focus {
 
 .site-footer {
     text-align: center;
-    padding: 2rem;
-    margin-top: 2rem;
+    padding: 1rem;
+    margin-top: 1rem;
     opacity: 0.3;
     transition: opacity 0.3s;
 }
@@ -786,8 +782,14 @@ input:focus {
     /* Header adjustments */
     header h1 {
         font-size: 3rem;
+        padding: 0 45px; /* Prevent collision with admin lock */
     }
     
+    .admin-controls {
+        top: 0.8rem;
+        right: 0.8rem;
+    }
+
     header p {
         font-size: 1rem;
         margin-bottom: 2rem;

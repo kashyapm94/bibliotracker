@@ -14,6 +14,8 @@ from bibliotracker.storage.client import PostgresClient
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+# Suppress httpx logs to prevent API key exposure in search URLs
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -99,6 +101,9 @@ def search_books(
             }
         )
 
+    logger.info(
+        f"Returning {len(formatted)} results to frontend for query: '{query_string}'"
+    )
     return formatted
 
 
@@ -165,7 +170,7 @@ def get_stats() -> dict:
 
 @app.get("/api/wishlist")
 def get_wishlist(
-    page_number: int = Query(1, alias="page"), page_size: int = Query(10, alias="size")
+    page_number: int = Query(1, alias="page"), page_size: int = Query(12, alias="size")
 ) -> dict:
     """
     Retrieve a paginated list of books from the wishlist.
