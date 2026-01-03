@@ -36,13 +36,18 @@ async function fetchBooks(page = 1) {
         bookGrid.classList.add('fade-out');
         
         setTimeout(() => {
-            renderBooks(data.items);
-            renderPagination(data);
-            
-            // Smooth Transition: Fade In
-            bookGrid.classList.remove('fade-out');
-            bookGrid.classList.add('fade-in');
-            setTimeout(() => bookGrid.classList.remove('fade-in'), 400);
+            try {
+                renderBooks(data.items);
+                renderPagination(data);
+            } catch (renderError) {
+                console.error("Error rendering books:", renderError);
+                bookGrid.innerHTML = '<div class="error-state">Something went wrong showing your books.</div>';
+            } finally {
+                // Smooth Transition: Fade In
+                bookGrid.classList.remove('fade-out');
+                bookGrid.classList.add('fade-in');
+                setTimeout(() => bookGrid.classList.remove('fade-in'), 400);
+            }
             
             // Scroll to top of list section smoothly
             document.querySelector('.toread-section').scrollIntoView({ behavior: 'smooth' });

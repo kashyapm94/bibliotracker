@@ -248,7 +248,7 @@ def get_toread(
                 if book_record.subjects
                 else [],
                 "is_fiction": book_record.is_fiction or "Unknown",
-                "is_owned": book_record.is_owned,
+                "is_owned": book_record.is_owned or False,
             }
         )
     return {
