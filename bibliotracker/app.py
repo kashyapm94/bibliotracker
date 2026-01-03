@@ -190,6 +190,25 @@ async def update_book_status(
     return {"status": "success", "message": "Book status updated"}
 
 
+@app.delete("/api/books/{book_id}")
+async def delete_book_endpoint(
+    book_id: int,
+    x_admin_password: str = Header(None),
+) -> dict:
+    """
+    Delete a book from the list. Admin only.
+    """
+    await verify_admin(x_admin_password)
+
+    success = db_client.delete_book(book_id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail="Book not found or could not be deleted"
+        )
+
+    return {"status": "success", "message": "Book deleted successfully"}
+
+
 @app.get("/api/stats")
 async def get_stats() -> dict:
     """

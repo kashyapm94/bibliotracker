@@ -145,3 +145,15 @@ def test_get_toread(client: TestClient, mock_db_client: MagicMock) -> None:
     assert len(data["items"]) == 1
     assert data["items"][0]["title"] == "B1"
     assert data["items"][0]["is_owned"] is False
+
+
+def test_delete_book_success(client: TestClient, mock_db_client: MagicMock) -> None:
+    mock_db_client.delete_book.return_value = True
+
+    headers = {"x-admin-password": "secret_password"}
+    response = client.delete("/api/books/1", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+
+    # Verify db_client.delete_book was called
+    mock_db_client.delete_book.assert_called_with(1)

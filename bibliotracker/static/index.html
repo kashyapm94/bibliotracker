@@ -98,6 +98,19 @@
     <footer class="site-footer">
     </footer>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 class="modal-title">Confirm Action</h2>
+            <p id="confirmationMessage" style="margin: 1.5rem 0; color: var(--text-secondary);">Are you sure?</p>
+            
+            <div class="modal-actions" style="display: flex; gap: 1rem; justify-content: center;">
+                <button id="cancelConfirmBtn" class="pagination-btn" style="background: #e3e2f0; color: #475569;">Cancel</button>
+                <button id="confirmActionBtn" class="pagination-btn" style="background: #ef4444; color: white; border: none;"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/script.js?v=2"></script>
 </body>
 </html>

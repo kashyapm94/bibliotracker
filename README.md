@@ -26,7 +26,8 @@ A modern, intelligent web application to track your **to-read list**. It goes be
 - **Google Books Integration**: Powered by the **Google Books API** for comprehensive and accurate book searching. **Strictly English-only results** to keep your suggestions relevant.
 - **Infinite Scroll**: Seamlessly browse through search results with automated pagination and infinite scrolling.
 - **Duplicate Prevention**: Intelligently prevents adding the same book twice (case-insensitive) to keep your list clean.
-- **Admin-Only Access**: Book searching and addition are strictly restricted to authenticated administrators to maintain list quality.
+- **Admin-Only Access**: Book searching, addition, and deletion are strictly restricted to authenticated administrators to maintain list quality.
+- **Secure Deletion**: Remove books from your collection with a secure confirmation flow to prevent accidental data loss.
 
 ### 🎨 Modern Experience
 - **Literary Theme**: A refined, light "literary" aesthetic designed for book lovers.

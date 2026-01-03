@@ -15,7 +15,7 @@ let hasMoreResults = true;
 let currentQuery = '';
 
 let currentPage = 1;
-const pageSize = 9;
+const pageSize = 12;
 let currentBooksData = [];
 
 // Initial load
@@ -79,6 +79,9 @@ function renderBooks(books) {
                 <div class="owned-toggle" onclick="toggleOwnership(${book.id}, ${book.is_owned}, this)">
                     <span class="toggle-icon">${book.is_owned ? '✅' : '⬜'}</span>
                     <span class="toggle-text">${book.is_owned ? 'Owned' : 'Mark as Owned'}</span>
+                </div>
+                <div class="delete-btn" onclick="event.stopPropagation(); deleteBook(${book.id}, '${book.title.replace(/'/g, "\\'")}')" title="Delete Book">
+                    🗑️
                 </div>
             `;
         } else {
@@ -186,14 +189,9 @@ function renderDropdown(results, page) {
             dropdown.appendChild(item);
         });
         
-        // Setup Infinite Scroll on the dropdown container provided it has content
+        // Setup Infinite Scroll
         if (page === 1 && results.length > 0) {
-             // Ensure we don't attach multiple listeners if called multiple times (though page 1 implies fresh start)
-             // But actually it's cleaner to attach once globally or ensure we don't duplicate.
-             // Since we clear innerHTML, we might lose the scroll position or state, but the listener is on the container 'dropdown'
-             // which is NOT cleared (it's a div in HTML). So we should attach the listener ONCE outside or check it here.
-             // Better to attach it once in global scope, but we need closure over current variables.
-             // Actually, Global variables are used, so global listener is fine.
+             // Listener already attached globally
         }
     }
     
@@ -214,41 +212,48 @@ dropdown.addEventListener('scroll', () => {
 });
 
 async function selectBook(book) {
-    // UI Feedback
-    searchInput.value = book.title;
-    dropdown.classList.add('hidden');
-    
-    // Optimistic UI updates could go here
-    
-    try {
-        const payload = {
-            book_key: book.key,
-            title: book.title,
-            authors_str: book.authors,
-            subjects: book.subjects || []
-        };
+    if (!adminPassword) return; // double check
 
-        const res = await fetch('/api/add', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-admin-password': adminPassword || ''
-            },
-            body: JSON.stringify(payload)
-        });
+    showConfirmationModal(
+        `Do you want to add "${book.title}" by ${book.authors} to your to-read list?`,
+        async () => {
+            // UI Feedback
+            searchInput.value = book.title;
+            dropdown.classList.add('hidden');
+            
+            try {
+                const payload = {
+                    book_key: book.key,
+                    title: book.title,
+                    authors_str: book.authors,
+                    subjects: book.subjects || []
+                };
 
-        const data = await res.json();
-        
-        if (res.ok) {
-            showToast(data.message);
-            searchInput.value = ''; // clear only on success
-            fetchBooks(); // Refresh list
-        } else {
-            showToast(data.detail || "Failed to add book", true);
-        }
-    } catch (error) {
-        showToast("Error connecting to server", true);
-    }
+                const res = await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-password': adminPassword || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message);
+                    searchInput.value = ''; // clear only on success
+                    fetchBooks(); // Refresh list
+                } else {
+                    showToast(data.detail || "Failed to add book", true);
+                }
+            } catch (error) {
+                showToast("Error connecting to server", true);
+            }
+        },
+        "Add Book",
+        "primary"
+    );
 }
 
 async function toggleOwnership(bookId, currentStatus, element) {
@@ -256,8 +261,6 @@ async function toggleOwnership(bookId, currentStatus, element) {
 
     const newStatus = !currentStatus;
     
-    // Optimistic UI update could be done, but let's wait for server to be safe or simple toggle
-    // Let's optimistic update the icon
     const icon = element.querySelector('.toggle-icon');
     const text = element.querySelector('.toggle-text');
     icon.textContent = '⏳'; 
@@ -273,13 +276,10 @@ async function toggleOwnership(bookId, currentStatus, element) {
         });
         
         if (res.ok) {
-            // Success
             showToast("Updated ownership status");
-            // Refresh interactions
             fetchBooks(currentPage); 
         } else {
             showToast("Failed to update status", true);
-            // Revert UI implicitly by fetching list or manually resetting
             fetchBooks(currentPage);
         }
     } catch (error) {
@@ -308,10 +308,6 @@ function openBookDetails(book) {
     document.getElementById('modalRegion').textContent = `📍 ${book.region}`;
     document.getElementById('modalCategory').textContent = book.is_fiction;
     
-    // Add Owned Status to Modal (Dynamically created or added to HTML first)
-    // For now, let's append it to the meta row if not exists, or just append to description for simplicity
-    // Or better: update the modal HTML in index.html to have a slot for it.
-    // Let's assume we can add it to the meta row dynamically here.
     let ownedSpan = document.getElementById('modalOwned');
     if (!ownedSpan) {
         ownedSpan = document.createElement('span');
@@ -448,3 +444,89 @@ document.addEventListener('click', (e) => {
         dropdown.classList.add('hidden');
     }
 });
+
+
+// Custom Confirmation Modal
+const confirmationModal = document.getElementById('confirmationModal');
+const confirmActionBtn = document.getElementById('confirmActionBtn');
+const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+const confirmationMessage = document.getElementById('confirmationMessage');
+
+let pendingAction = null;
+
+function showConfirmationModal(message, onConfirm, buttonText = "Confirm", variant = "danger") {
+    if (!confirmationModal) return; // safety check
+    
+    confirmationMessage.textContent = message;
+    pendingAction = onConfirm;
+    
+    // Style the confirm button
+    confirmActionBtn.textContent = buttonText;
+    if (variant === "danger") {
+        confirmActionBtn.style.background = "#ef4444";
+    } else {
+        confirmActionBtn.style.background = "#7c3aed"; // Violet theme primary
+    }
+    
+    confirmationModal.classList.remove('hidden');
+}
+
+function hideConfirmationModal() {
+    confirmationModal.classList.add('hidden');
+    pendingAction = null;
+}
+
+if (confirmActionBtn) {
+    confirmActionBtn.addEventListener('click', () => {
+        if (pendingAction) {
+            pendingAction();
+        }
+        hideConfirmationModal();
+    });
+}
+
+if (cancelConfirmBtn) {
+    cancelConfirmBtn.addEventListener('click', hideConfirmationModal);
+}
+
+// Close modal if clicked outside
+if (confirmationModal) {
+    confirmationModal.addEventListener('click', (e) => {
+        if (e.target === confirmationModal) {
+            hideConfirmationModal();
+        }
+    });
+}
+
+async function deleteBook(bookId, bookTitle) {
+    if (!adminPassword) return;
+
+    showConfirmationModal(
+        `Are you sure you want to delete "${bookTitle}"?`, 
+        async () => {
+            try {
+                const res = await fetch(`/api/books/${bookId}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'x-admin-password': adminPassword 
+                    }
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast("Book deleted");
+                    // Refresh list
+                    fetchBooks(currentPage);
+                } else {
+                    showToast(data.detail || "Failed to delete book", true);
+                }
+            } catch (error) {
+                console.error(error);
+                showToast("Error deleting book", true);
+            }
+        },
+        "Delete",
+        "danger"
+    );
+}

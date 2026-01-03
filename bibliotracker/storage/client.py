@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from sqlalchemy import create_engine, func, select, update
+from sqlalchemy import create_engine, delete, func, select, update
 from sqlalchemy.orm import sessionmaker
 
 from bibliotracker.config import Config
@@ -126,6 +126,26 @@ class PostgresClient:
                 return result.rowcount > 0
         except Exception as error:
             logger.error(f"DB Update Error: {error}")
+            return False
+
+    def delete_book(self, book_id: int) -> bool:
+        """
+        Delete a book record from the database.
+
+        Args:
+            book_id (int): The ID of the book to delete.
+
+        Returns:
+            bool: True if successful, False if book not found or error.
+        """
+        try:
+            with self.session() as session:
+                stmt = delete(Book).where(Book.id == book_id)
+                result = session.execute(stmt)
+                session.commit()
+                return result.rowcount > 0
+        except Exception as error:
+            logger.error(f"DB Delete Error: {error}")
             return False
 
     def get_all_books(
