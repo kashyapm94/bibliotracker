@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Boolean, Column, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -16,6 +16,7 @@ class Book(Base):
     region = Column(String, nullable=True)
     subjects = Column(Text, nullable=True)  # Stored as comma-separated values
     is_fiction = Column(String, nullable=True)  # Store "Fiction" or "Non-Fiction"
+    is_owned = Column(Boolean, default=False)
 
     def __repr__(self):
         return f"<Book(title={self.title}, author={self.author})>"

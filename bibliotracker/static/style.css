@@ -265,14 +265,14 @@ input:focus {
     content: '!';
 }
 
-/* Wishlist Section */
-.wishlist-section {
+/* To-Read Section */
+.toread-section {
     margin-top: 5rem;
     padding-bottom: 2rem;
     width: 100%;
 }
 
-.wishlist-section h2 {
+.toread-section h2 {
     font-size: 3rem;
     margin-bottom: 3.5rem;
     color: #1e293b; /* Solid dark color for better clarity */
@@ -281,14 +281,14 @@ input:focus {
     text-shadow: none;
 }
 
-.wishlist-grid {
+.book-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* Force 3 columns, prevent overflow */
+    max-width: 1200px; /* Match container max-width */
+    width: 100%;
     margin: 2rem auto 0 auto;
-    justify-content: center; /* Center items if they don't fill a row */
     gap: 2rem;
-    margin-top: 2rem;
+    padding-bottom: 4rem; /* Ensure bottom spacing */
 }
 
 .book-card {
@@ -297,7 +297,7 @@ input:focus {
     -webkit-backdrop-filter: blur(12px);
     border: var(--glass-border);
     border-radius: 20px; /* Slightly tighter corner */
-    padding: 2.2rem; /* Restore breathing room */
+    padding: 2.2rem 2.2rem 5rem 2.2rem; /* Extra bottom padding for badge space */
     color: #1e293b; 
     
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -357,6 +357,63 @@ input:focus {
     border-radius: 10px;
     gap: 1rem;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+/* Owned Badge/Toggle Shared Styles */
+.owned-toggle, .owned-tag {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    top: auto; /* Reset top */
+    z-index: 10;
+}
+
+/* Owned Toggle Specifics */
+.owned-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.3rem 0.8rem;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.owned-toggle:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.owned-toggle:active {
+    transform: translateY(0);
+}
+
+/* Static Badge Specifics */
+.owned-tag {
+    /* Reuse badge look but ensure positioning matches toggle */
+    background: var(--accent); /* Match theme violet */
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-icon {
+    font-size: 1rem;
+}
+
+.toggle-text {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--text-primary);
 }
 
 .category-tag {
@@ -393,7 +450,7 @@ input:focus {
     transform: scale(1.05);
 }
 
-.empty-wishlist {
+.empty-list {
     grid-column: 1 / -1;
     text-align: center;
     padding: 5rem 2rem;
@@ -450,16 +507,16 @@ input:focus {
 }
 
 /* Smooth Transitions */
-.wishlist-grid {
+.book-grid {
     transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
 }
 
-.wishlist-grid.fade-out {
+.book-grid.fade-out {
     opacity: 0;
     transform: translateY(10px);
 }
 
-.wishlist-grid.fade-in {
+.book-grid.fade-in {
     opacity: 1;
     transform: translateY(0);
 }
@@ -835,7 +892,7 @@ input:focus {
     }
 
     /* Grid adjustments */
-    .wishlist-grid {
+    .book-grid {
         grid-template-columns: 1fr; /* Single column on mobile */
         gap: 1.5rem;
     }
