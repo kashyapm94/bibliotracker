@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Stats 📊</title>
-    <link rel="stylesheet" href="/static/style.css?v=24">
+    <link rel="stylesheet" href="/static/style.css?v=26">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -50,6 +50,20 @@
                 <h2>Fiction vs Non-Fiction</h2>
                 <div class="chart-wrapper">
                     <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2>Ownership Status</h2>
+                <div class="chart-wrapper">
+                    <canvas id="ownershipChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2>Top Authors</h2>
+                <div class="chart-wrapper">
+                    <canvas id="authorsChart"></canvas>
                 </div>
             </div>
 
@@ -119,9 +133,8 @@
 
         function renderCharts(data) {
             // Populate summary cards
-            document.getElementById('totalBooks').textContent = data.total_books;
-            document.getElementById('uniqueAuthors').textContent = data.unique_authors;
-            document.getElementById('topSubject').textContent = data.top_subject;
+            const subjectLabels = Object.keys(data.top_subjects);
+            const subjectCounts = Object.values(data.top_subjects).map(list => list.length);
 
             // Helpers to get counts
             const regionLabels = Object.keys(data.regions);
@@ -130,8 +143,10 @@
             const categoryLabels = Object.keys(data.categories);
             const categoryCounts = Object.values(data.categories).map(list => list.length);
 
-            const subjectLabels = Object.keys(data.top_subjects);
-            const subjectCounts = Object.values(data.top_subjects).map(list => list.length);
+            // Populate summary cards (Derived from data)
+            document.getElementById('totalBooks').textContent = data.total_books;
+            document.getElementById('uniqueAuthors').textContent = data.unique_authors;
+            document.getElementById('topSubject').textContent = subjectLabels.length > 0 ? subjectLabels[0] : 'N/A';
 
             // Region Chart (Bar)
             const regionCtx = document.getElementById('regionChart').getContext('2d');
@@ -216,6 +231,100 @@
                     }
                 }
             });
+
+            // Ownership Chart (Doughnut)
+            // Check for ownership data to prevent errors if backend is older
+            if (data.ownership) {
+                const ownershipLabels = Object.keys(data.ownership);
+                const ownershipCounts = Object.values(data.ownership).map(list => list.length);
+
+                const ownershipCtx = document.getElementById('ownershipChart').getContext('2d');
+                new Chart(ownershipCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ownershipLabels,
+                        datasets: [{
+                            data: ownershipCounts,
+                            backgroundColor: [
+                                'rgba(124, 58, 237, 0.6)', // Violet for Owned
+                                'rgba(244, 63, 94, 0.6)'    // Rose-500 for Not Owned
+                            ],
+                            borderColor: [
+                                'rgba(124, 58, 237, 0.9)',
+                                'rgba(244, 63, 94, 0.9)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onClick: (evt, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = ownershipLabels[index];
+                                const books = data.ownership[label];
+                                openModal(`${label} Books`, books);
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { color: '#000000', font: { weight: 'bold' } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Top Authors Chart (Horizontal Bar)
+            if (data.top_authors) {
+                const authorLabels = Object.keys(data.top_authors);
+                const authorCounts = Object.values(data.top_authors).map(list => list.length);
+
+                const authorsCtx = document.getElementById('authorsChart').getContext('2d');
+                new Chart(authorsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: authorLabels,
+                        datasets: [{
+                            label: 'Books by Author',
+                            data: authorCounts,
+                            backgroundColor: 'rgba(234, 179, 8, 0.6)', // Yellow-500
+                            borderColor: 'rgba(234, 179, 8, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onClick: (evt, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = authorLabels[index];
+                                const books = data.top_authors[label];
+                                openModal(`Books by ${label}`, books);
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false, labels: { color: '#000000' } }
+                        },
+                        scales: {
+                            x: { 
+                                beginAtZero: true, 
+                                ticks: { stepSize: 1, color: '#000000' },
+                                grid: { color: 'rgba(0,0,0,0.1)' }
+                            },
+                            y: { 
+                                ticks: { color: '#000000' },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
 
             // Subjects Chart (Horizontal Bar)
             const subjectsCtx = document.getElementById('subjectsChart').getContext('2d');

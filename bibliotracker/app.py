@@ -38,6 +38,7 @@ class BookSelection(BaseModel):
     title: str
     authors_str: str
     subjects: list[str]
+    is_owned: bool = False
 
 
 async def verify_admin(x_admin_password: str = Header(None)):
@@ -115,10 +116,10 @@ def verify_admin_status() -> dict:
     return {"status": "ok"}
 
 
-@app.post("/api/add", dependencies=[Depends(verify_admin)])
-def add_book(selection: BookSelection) -> dict:
+@app.post("/api/add")
+def add_book(selection: BookSelection, x_admin_password: str = Header(None)) -> dict:
     """
-    Add a selected book to the wishlist. Fetches rich metadata using AI.
+    Add a selected book to the to-read list. Fetches rich metadata using AI.
 
     Args:
         selection (BookSelection): The book selected by the user from search results.
@@ -130,6 +131,12 @@ def add_book(selection: BookSelection) -> dict:
         HTTPException: If book details cannot be fetched or DB addition fails.
     """
     logger.info(f"Adding book: {selection.title}")
+
+    # Security Check: Only admins can set is_owned
+    if selection.is_owned:
+        if x_admin_password != config.ADMIN_PASSWORD:
+            logger.warning("Unauthorized attempt to set is_owned. defaulting to False.")
+            selection.is_owned = False
 
     # Fetch details via AI (single source of truth now)
     # We assume 'authors_str' is passed, or we can use the author list from search result if available.
@@ -151,6 +158,7 @@ def add_book(selection: BookSelection) -> dict:
         book_region=details.get("region", "Unknown"),
         book_subjects=details.get("subjects", []),
         is_fiction_category=details.get("is_fiction", "Unknown"),
+        is_owned=selection.is_owned,
     )
 
     if added:
@@ -160,20 +168,61 @@ def add_book(selection: BookSelection) -> dict:
         raise HTTPException(status_code=500, detail=msg)
 
 
+@app.patch("/api/books/{book_id}")
+async def update_book_status(
+    book_id: int,
+    status_update: dict,
+    x_admin_password: str = Header(None),
+) -> dict:
+    """
+    Update the ownership status of a book. Admin only.
+    """
+    await verify_admin(x_admin_password)
+
+    is_owned = status_update.get("is_owned")
+    if is_owned is None:
+        raise HTTPException(status_code=400, detail="Missing is_owned field")
+
+    success = db_client.update_book_ownership(book_id, is_owned)
+    if not success:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    return {"status": "success", "message": "Book status updated"}
+
+
+@app.delete("/api/books/{book_id}")
+async def delete_book_endpoint(
+    book_id: int,
+    x_admin_password: str = Header(None),
+) -> dict:
+    """
+    Delete a book from the list. Admin only.
+    """
+    await verify_admin(x_admin_password)
+
+    success = db_client.delete_book(book_id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail="Book not found or could not be deleted"
+        )
+
+    return {"status": "success", "message": "Book deleted successfully"}
+
+
 @app.get("/api/stats")
-def get_stats() -> dict:
+async def get_stats() -> dict:
     """
     Get aggregated statistics for charts.
     """
     return db_client.get_stats()
 
 
-@app.get("/api/wishlist")
-def get_wishlist(
+@app.get("/api/toread")
+def get_toread(
     page_number: int = Query(1, alias="page"), page_size: int = Query(12, alias="size")
 ) -> dict:
     """
-    Retrieve a paginated list of books from the wishlist.
+    Retrieve a paginated list of books from the to-read list.
 
     Args:
         page_number (int): The page number to fetch. Defaults to 1.
@@ -199,6 +248,7 @@ def get_wishlist(
                 if book_record.subjects
                 else [],
                 "is_fiction": book_record.is_fiction or "Unknown",
+                "is_owned": book_record.is_owned,
             }
         )
     return {

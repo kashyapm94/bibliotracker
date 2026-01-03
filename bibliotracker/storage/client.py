@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, delete, func, select, update
 from sqlalchemy.orm import sessionmaker
 
 from bibliotracker.config import Config
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class PostgresClient:
     """
-    Handles database operations for the book wishlist using SQLAlchemy.
+    Handles database operations for the book to-read list using SQLAlchemy.
     """
 
     def __init__(self, app_config: Config) -> None:
@@ -57,9 +57,10 @@ class PostgresClient:
         book_region: str | None = None,
         book_subjects: list[str] | None = None,
         is_fiction_category: str | None = None,
+        is_owned: bool = False,
     ) -> tuple[bool, str]:
         """
-        Add a new book record to the wishlist.
+        Add a new book record to the to-read list.
 
         Args:
             book_title (str): The canonical title of the book.
@@ -68,6 +69,7 @@ class PostgresClient:
             book_region (str, optional): Geographical region. Defaults to None.
             book_subjects (list[str], optional): List of genres/subjects. Defaults to None.
             is_fiction_category (str, optional): "Fiction" or "Non-Fiction". Defaults to None.
+            is_owned (bool, optional): Whether the user owns this book. Defaults to False.
 
         Returns:
             tuple[bool, str]: A tuple of (success_status, status_message).
@@ -86,6 +88,7 @@ class PostgresClient:
                 region=book_region,
                 subjects=subjects_str,
                 is_fiction=is_fiction_category,
+                is_owned=is_owned,
             )
 
             with self.session() as session:
@@ -97,6 +100,53 @@ class PostgresClient:
         except Exception as error:
             logger.error(f"DB Error: {error}")
             return False, str(error)
+
+    def update_book_ownership(self, book_id: int, is_owned: bool) -> bool:
+        """
+        Update the ownership status of a book.
+
+        Args:
+            book_id (int): The ID of the book to update.
+            is_owned (bool): The new ownership status.
+
+        Returns:
+            bool: True if successful, False if book not found.
+        """
+
+        try:
+            with self.session() as session:
+                stmt = (
+                    update(Book)
+                    .where(Book.id == book_id)
+                    .values(is_owned=is_owned)
+                    .execution_options(synchronize_session="fetch")
+                )
+                result = session.execute(stmt)
+                session.commit()
+                return result.rowcount > 0
+        except Exception as error:
+            logger.error(f"DB Update Error: {error}")
+            return False
+
+    def delete_book(self, book_id: int) -> bool:
+        """
+        Delete a book record from the database.
+
+        Args:
+            book_id (int): The ID of the book to delete.
+
+        Returns:
+            bool: True if successful, False if book not found or error.
+        """
+        try:
+            with self.session() as session:
+                stmt = delete(Book).where(Book.id == book_id)
+                result = session.execute(stmt)
+                session.commit()
+                return result.rowcount > 0
+        except Exception as error:
+            logger.error(f"DB Delete Error: {error}")
+            return False
 
     def get_all_books(
         self, skip_records: int = 0, limit_records: int = 10
@@ -123,12 +173,11 @@ class PostgresClient:
 
     def get_total_count(self) -> int:
         """
-        Get the total count of all books in the wishlist.
+        Get the total count of all books in the to-read list.
 
         Returns:
             int: The total number of book records.
         """
-        from sqlalchemy import func
 
         with self.session() as session:
             stmt = select(func.count(Book.id))
@@ -147,6 +196,8 @@ class PostgresClient:
             region_map = defaultdict(list)
             category_map = defaultdict(list)
             subject_map = defaultdict(list)
+            authors_map = defaultdict(list)
+            ownership_map = defaultdict(list)
             authors_set = set()
 
             for book in books:
@@ -175,18 +226,33 @@ class PostgresClient:
                         if subject:
                             subject_map[subject].append(item)
 
+                # Ownership Stats
+                status = "Owned" if book.is_owned else "Not Owned"
+                ownership_map[status].append(item)
+
+                # Author Stats (Split comma-separated)
+                if book.author:
+                    authors_list = [a.strip() for a in book.author.split(",")]
+                    for author in authors_list:
+                        if author:
+                            authors_map[author].append(item)
+
             # Get top 5 subjects
             top_subjects = dict(
                 sorted(subject_map.items(), key=lambda x: len(x[1]), reverse=True)[:5]
             )
 
+            # Get top 5 authors
+            top_authors = dict(
+                sorted(authors_map.items(), key=lambda x: len(x[1]), reverse=True)[:5]
+            )
+
             return {
                 "total_books": len(books),
                 "unique_authors": len(authors_set),
-                "top_subject": max(subject_map.items(), key=lambda x: len(x[1]))[0]
-                if subject_map
-                else "N/A",
                 "regions": dict(region_map),
                 "categories": dict(category_map),
                 "top_subjects": top_subjects,
+                "top_authors": top_authors,
+                "ownership": dict(ownership_map),
             }

@@ -21,7 +21,7 @@ class BookLookupService:
         self.google_client = GoogleBooksClient(api_key=config.GOOGLE_BOOKS_API_KEY)
 
     def search_books(
-        self, search_query: str, page_number: int = 1, results_limit: int = 20
+        self, search_query: str, page_number: int = 1, results_limit: int = 40
     ) -> tuple[list[dict], int]:
         """
         Search for books matching the query using the Google Books API.

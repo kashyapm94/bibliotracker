@@ -1,13 +1,7 @@
 # Bibliotracker
 ![Unit Tests](https://github.com/kashyapm94/bibliotracker/actions/workflows/unittest.yml/badge.svg)
 
-A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your wishlist through an interactive dashboard.
-
-<div align="center">
-  <video src="demo/demo.mp4" controls width="100%"></video>
-  <br/>
-  <a href="demo/demo.mp4">Watch the Demo Video</a>
-</div>
+A modern, intelligent web application to track your **to-read list**. It goes beyond a simple list by automatically enriching book entries with deep metadata and context using AI, and visualizing your to-read list through an interactive dashboard.
 
 ## ✨ Features
 
@@ -17,17 +11,23 @@ A modern, intelligent web application to track your **to-read list**. It goes be
 - **Subject Analysis**: Categorizes books into key subjects and genres (Fiction/Non-Fiction) for better organization.
 
 ### 📊 Interactive Statistics Dashboard
-- **Visual Insights**: Specific visualizations powered by **Chart.js** to track your wishlist.
-    - **Region Map**: See the distribution of your books across different continents/regions.
+- **Visual Insights**: Specific visualizations powered by **Chart.js** to track your reading habits.
+    - **Ownership Status**: See how many books you own vs. need to acquire.
+    - **Top Authors**: Discover your to-read list's top authors.
     - **Genre Split**: Visualize the balance between Fiction and Non-Fiction.
-    - **Top Subjects**: Identify your most read topics.
-- **Drill-Down Capability**: Click on any chart segment to see the specific list of books in that category.
+    - **Top Subjects**: Identify your most to-read top subjects.
+
+### ✅ Ownership Tracking
+- **Track Your Collection**: Mark books as "Owned" directly from the card.
+- **Admin Control**: Secure, admin-only toggle for updating ownership status to prevent accidental changes.
+- **Visual Indicators**: Clear badges distinguish owned books at a glance.
 
 ### 🔎 Smart Search & Management
 - **Google Books Integration**: Powered by the **Google Books API** for comprehensive and accurate book searching. **Strictly English-only results** to keep your suggestions relevant.
 - **Infinite Scroll**: Seamlessly browse through search results with automated pagination and infinite scrolling.
 - **Duplicate Prevention**: Intelligently prevents adding the same book twice (case-insensitive) to keep your list clean.
-- **Secure Admin**: Protected by a dedicated **Admin Login Modal** to control additions to your curated list.
+- **Admin-Only Access**: Book searching, addition, and deletion are strictly restricted to authenticated administrators to maintain list quality.
+- **Secure Deletion**: Remove books from your collection with a secure confirmation flow to prevent accidental data loss.
 
 ### 🎨 Modern Experience
 - **Literary Theme**: A refined, light "literary" aesthetic designed for book lovers.
@@ -107,6 +107,14 @@ Run migrations to create/update your schema:
 
 ```bash
 uv run alembic upgrade head
+```
+
+### Production Deployment
+
+When deploying to production (e.g., Railway, Vercel, VPS), ensure you run migrations as part of your startup command to keep the database schema in sync:
+
+```bash
+uv run alembic upgrade head && uv run uvicorn bibliotracker.app:app --host 0.0.0.0 --port $PORT
 ```
 
 ### Running the Application
