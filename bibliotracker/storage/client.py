@@ -22,7 +22,12 @@ class PostgresClient:
         Args:
             app_config (Config): Configuration object containing database credentials and host.
         """
-        self.engine = create_engine(str(app_config.SQLALCHEMY_DATABASE_URI))
+        self.engine = create_engine(
+            str(app_config.SQLALCHEMY_DATABASE_URI),
+            pool_pre_ping=True,  # emits a lightweight `SELECT 1` stmt before actual query
+            pool_size=5,  # keep pool small for free tiers
+            max_overflow=10,  # allow extra connections if needed
+        )
         self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
         # Ensure tables exist
