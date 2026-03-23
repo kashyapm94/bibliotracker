@@ -54,6 +54,13 @@ Bibliotracker is a FastAPI web app for tracking a to-read list. Books are search
 - `bibliotracker/static/` — Vanilla JS/HTML/CSS frontend served by FastAPI (`index.html`, `stats.html`, `script.js`, `style.css`)
 - `alembic/` — Migration scripts
 
+### Frontend behaviour
+
+- Filter bar on the main page lets users filter books by Fiction / Non-Fiction / Owned. Filters are applied server-side via query params on `GET /api/toread`.
+- When adding a book the confirmation modal stays open with a "Please wait..." button state until the AI + DB round-trip completes (can take several seconds).
+- Escape key closes any open modal or dropdown.
+- The search dropdown shows "Searching..." immediately while the API call is in flight.
+
 ### Important data model details
 
 - `Book.subjects` is stored as a comma-separated string (max 5 subjects), not an array
@@ -68,6 +75,8 @@ Admin-only endpoints (`POST /api/add` with `is_owned`, `PATCH /api/books/{id}`, 
 ### Database
 
 Uses synchronous SQLAlchemy with `postgresql+psycopg` (psycopg3). The engine is configured with `pool_pre_ping=True`, `pool_size=5`, `max_overflow=10`. Schema is auto-created via `Base.metadata.create_all()` on startup; Alembic handles incremental migrations.
+
+`get_all_books` and `get_total_count` accept optional `filter_fiction: str | None` and `filter_owned: bool | None` parameters that add `WHERE` clauses to their queries.
 
 ### Testing
 

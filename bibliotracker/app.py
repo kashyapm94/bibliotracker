@@ -219,21 +219,31 @@ async def get_stats() -> dict:
 
 @app.get("/api/toread")
 def get_toread(
-    page_number: int = Query(1, alias="page"), page_size: int = Query(12, alias="size")
+    page_number: int = Query(1, alias="page"),
+    page_size: int = Query(12, alias="size"),
+    filter_fiction: str | None = Query(None, alias="fiction"),
+    filter_owned: bool | None = Query(None, alias="owned"),
 ) -> dict:
     """
     Retrieve a paginated list of books from the to-read list.
 
     Args:
         page_number (int): The page number to fetch. Defaults to 1.
-        page_size (int): The number of items per page. Defaults to 10.
+        page_size (int): The number of items per page. Defaults to 12.
+        filter_fiction (str, optional): Filter by "Fiction" or "Non-Fiction".
+        filter_owned (bool, optional): Filter by ownership status.
 
     Returns:
         dict: Paginated results including items, total count, and pagination metadata.
     """
     skip = (page_number - 1) * page_size
-    books = db_client.get_all_books(skip_records=skip, limit_records=page_size)
-    total = db_client.get_total_count()
+    books = db_client.get_all_books(
+        skip_records=skip,
+        limit_records=page_size,
+        filter_fiction=filter_fiction,
+        filter_owned=filter_owned,
+    )
+    total = db_client.get_total_count(filter_fiction=filter_fiction, filter_owned=filter_owned)
 
     formatted = []
     for book_record in books:

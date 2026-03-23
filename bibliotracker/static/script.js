@@ -18,16 +18,36 @@ let currentPage = 1;
 const pageSize = 12;
 let currentBooksData = [];
 
+// Filter state
+let activeFilter = 'all';
+
+function getFilterParams() {
+    if (activeFilter === 'fiction') return '&fiction=Fiction';
+    if (activeFilter === 'nonfiction') return '&fiction=Non-Fiction';
+    if (activeFilter === 'owned') return '&owned=true';
+    return '';
+}
+
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
     fetchBooks(1);
     checkAdmin();
+
+    // Filter bar
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeFilter = btn.dataset.filter;
+            fetchBooks(1);
+        });
+    });
 });
 
 async function fetchBooks(page = 1) {
     currentPage = page;
     try {
-        const res = await fetch(`/api/toread?page=${page}&size=${pageSize}`);
+        const res = await fetch(`/api/toread?page=${page}&size=${pageSize}${getFilterParams()}`);
         const data = await res.json();
         
         currentBooksData = data.items;
@@ -154,14 +174,19 @@ async function fetchResults(query, page = 1) {
     if (isSearching) return;
     isSearching = true;
 
+    if (page === 1) {
+        dropdown.innerHTML = '<div class="dropdown-item"><span class="item-meta">Searching...</span></div>';
+        dropdown.classList.remove('hidden');
+    }
+
     try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}`);
         const data = await res.json();
-        
+
         if (data.length === 0) {
             hasMoreResults = false;
         }
-        
+
         renderDropdown(data, page);
     } catch (error) {
         console.error("Error fetching results:", error);
@@ -482,13 +507,33 @@ function hideConfirmationModal() {
 }
 
 if (confirmActionBtn) {
-    confirmActionBtn.addEventListener('click', () => {
+    confirmActionBtn.addEventListener('click', async () => {
         if (pendingAction) {
-            pendingAction();
+            const originalText = confirmActionBtn.textContent;
+            confirmActionBtn.disabled = true;
+            confirmActionBtn.textContent = 'Please wait...';
+            try {
+                await pendingAction();
+            } finally {
+                confirmActionBtn.disabled = false;
+                confirmActionBtn.textContent = originalText;
+            }
         }
         hideConfirmationModal();
     });
 }
+
+// Escape key closes any open modal or dropdown
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    detailsModal.classList.add('hidden');
+    loginModal.classList.add('hidden');
+    dropdown.classList.add('hidden');
+    // Don't close confirmation modal while an action is loading
+    if (confirmationModal && !confirmActionBtn.disabled) {
+        hideConfirmationModal();
+    }
+});
 
 if (cancelConfirmBtn) {
     cancelConfirmBtn.addEventListener('click', hideConfirmationModal);
