@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Set dummy env vars for testing
-os.environ["PERPLEXITY_API_KEY"] = "dummy_key"
+os.environ["ANTHROPIC_API_KEY"] = "dummy_key"
 os.environ["ADMIN_PASSWORD"] = "secret_password"
 os.environ["POSTGRES_DB"] = "test_db"
 os.environ["POSTGRES_HOST"] = "localhost"
