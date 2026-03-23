@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliotracker</title>
-    <link rel="stylesheet" href="/static/style.css?v=26">
+    <link rel="stylesheet" href="/static/style.css?v=27">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -38,6 +38,12 @@
                 <div class="section-header">
                     <h2>To-Read List</h2>
                     <a href="/static/stats.html" class="stats-link" title="Check out the stats of the to-read list">View Stats 📊</a>
+                </div>
+                <div class="filter-bar" id="filterBar">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="fiction">Fiction</button>
+                    <button class="filter-btn" data-filter="nonfiction">Non-Fiction</button>
+                    <button class="filter-btn" data-filter="owned">Owned</button>
                 </div>
                 <div id="wishlist" class="book-grid">
                     <!-- Wishlist items will be injected here -->
@@ -111,6 +117,6 @@
         </div>
     </div>
 
-    <script src="/static/script.js?v=3"></script>
+    <script src="/static/script.js?v=4"></script>
 </body>
 </html>

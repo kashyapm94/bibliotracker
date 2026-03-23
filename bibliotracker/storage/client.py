@@ -154,7 +154,11 @@ class PostgresClient:
             return False
 
     def get_all_books(
-        self, skip_records: int = 0, limit_records: int = 10
+        self,
+        skip_records: int = 0,
+        limit_records: int = 10,
+        filter_fiction: str | None = None,
+        filter_owned: bool | None = None,
     ) -> list[Book]:
         """
         Fetch a paginated list of books from the database.
@@ -162,23 +166,33 @@ class PostgresClient:
         Args:
             skip_records (int): Number of records to skip for pagination. Defaults to 0.
             limit_records (int): Maximum number of records to return. Defaults to 10.
+            filter_fiction (str, optional): Filter by "Fiction" or "Non-Fiction".
+            filter_owned (bool, optional): Filter by ownership status.
 
         Returns:
             list[Book]: A list of Book model instances, ordered by ID descending.
         """
         with self.session() as session:
-            stmt = (
-                select(Book)
-                .order_by(Book.id.desc())
-                .offset(skip_records)
-                .limit(limit_records)
-            )
+            stmt = select(Book)
+            if filter_fiction:
+                stmt = stmt.where(Book.is_fiction == filter_fiction)
+            if filter_owned is not None:
+                stmt = stmt.where(Book.is_owned == filter_owned)
+            stmt = stmt.order_by(Book.id.desc()).offset(skip_records).limit(limit_records)
             results = session.execute(stmt).scalars().all()
             return results
 
-    def get_total_count(self) -> int:
+    def get_total_count(
+        self,
+        filter_fiction: str | None = None,
+        filter_owned: bool | None = None,
+    ) -> int:
         """
         Get the total count of all books in the to-read list.
+
+        Args:
+            filter_fiction (str, optional): Filter by "Fiction" or "Non-Fiction".
+            filter_owned (bool, optional): Filter by ownership status.
 
         Returns:
             int: The total number of book records.
@@ -186,6 +200,10 @@ class PostgresClient:
 
         with self.session() as session:
             stmt = select(func.count(Book.id))
+            if filter_fiction:
+                stmt = stmt.where(Book.is_fiction == filter_fiction)
+            if filter_owned is not None:
+                stmt = stmt.where(Book.is_owned == filter_owned)
             return session.execute(stmt).scalar() or 0
 
     def get_stats(self) -> dict:
