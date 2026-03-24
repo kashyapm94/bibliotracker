@@ -1348,4 +1348,8 @@ input:focus {
     .stat-cards {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
+
+    .insights-strip {
+        justify-content: center;
+    }
 }
