@@ -256,6 +256,7 @@ header h1 {
 /* ─── SEARCH ─── */
 .search-card {
     position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 560px;
     margin: 0 auto;
@@ -1347,5 +1348,9 @@ input:focus {
 
     .stat-cards {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .insights-strip {
+        justify-content: center;
     }
 }
