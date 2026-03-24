@@ -56,10 +56,12 @@ Bibliotracker is a FastAPI web app for tracking a to-read list. Books are search
 
 ### Frontend behaviour
 
+- Dark theme with colorful book cards (per-card gradient via `nth-child` rules), glassmorphism footer (`backdrop-filter: blur`), gradient header text with shimmer animation, and rainbow top stripe.
 - Filter bar on the main page lets users filter books by Fiction / Non-Fiction / Owned. Filters are applied server-side via query params on `GET /api/toread`.
 - When adding a book the confirmation modal stays open with a "Please wait..." button state until the AI + DB round-trip completes (can take several seconds).
 - Escape key closes any open modal or dropdown.
 - The search dropdown shows "Searching..." immediately while the API call is in flight.
+- Google Fonts used: Lora (book titles), Playfair Display (headings), Outfit (body).
 
 ### Important data model details
 

@@ -80,18 +80,20 @@ async function fetchBooks(page = 1) {
 
 function renderBooks(books) {
     bookGrid.innerHTML = '';
-    
+
     if (books.length === 0) {
         bookGrid.innerHTML = '<div class="empty-list">Your to-read list is empty. Start adding books!</div>';
         return;
     }
 
-    books.forEach(book => {
+    books.forEach((book, index) => {
         const card = document.createElement('div');
         card.className = 'book-card';
-        // Add click listener to open details (excluding clicks on the toggle)
+        // Stagger: each card delayed 60ms more than previous
+        card.style.setProperty('--delay', `${index * 60}ms`);
+
         card.onclick = (e) => {
-            if (!e.target.closest('.owned-toggle')) {
+            if (!e.target.closest('.owned-toggle') && !e.target.closest('.delete-btn')) {
                 openBookDetails(book);
             }
         };
@@ -113,18 +115,28 @@ function renderBooks(books) {
             // Guest Badge (Static)
             ownedUI = book.is_owned ? '<span class="owned-tag">✅ Owned</span>' : '';
         }
-        
+
+        const initial = book.title.charAt(0).toUpperCase();
+        const categoryClass = book.is_fiction === 'Fiction' ? 'tag-fiction'
+            : book.is_fiction === 'Non-Fiction' ? 'tag-nonfiction'
+            : 'tag-unknown';
+
         card.innerHTML = `
-            <h3 class="book-title">${book.title}</h3>
-            <p class="book-author">by ${book.author}</p>
-            <div class="book-meta">
-                <span class="location">📍 ${book.region}</span>
-                <span class="category-tag">${book.is_fiction}</span>
+            <div class="book-cover">
+                <span class="cover-letter">${initial}</span>
+                <h3 class="book-title">${book.title}</h3>
+                <p class="book-author">by ${book.author}</p>
             </div>
-            <div class="book-tags">
-                ${book.subjects.map(s => `<span class="tag">${s}</span>`).join('')}
+            <div class="book-footer">
+                <div class="book-meta">
+                    <span class="location">📍 ${book.region}</span>
+                    <span class="category-tag ${categoryClass}">${book.is_fiction || '—'}</span>
+                </div>
+                <div class="book-tags">
+                    ${book.subjects.map(s => `<span class="tag">${s}</span>`).join('')}
+                </div>
+                ${ownedUI}
             </div>
-            ${ownedUI}
         `;
         bookGrid.appendChild(card);
     });
@@ -256,7 +268,7 @@ async function selectBook(book) {
                     book_key: book.key,
                     title: book.title,
                     authors_str: book.authors,
-                    subjects: book.subjects || []
+                    subjects: book.subjects || [],
                 };
 
                 const res = await fetch('/api/add', {
