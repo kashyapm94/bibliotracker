@@ -163,6 +163,8 @@ def add_book(selection: BookSelection, x_admin_password: str = Header(None)) -> 
 
     if added:
         return {"status": "success", "message": msg}
+    elif "already in your reading list" in msg:
+        raise HTTPException(status_code=409, detail=msg)
     else:
         logger.error(f"DB Add Failed: {msg}")
         raise HTTPException(status_code=500, detail=msg)

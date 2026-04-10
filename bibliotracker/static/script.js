@@ -281,11 +281,19 @@ async function selectBook(book) {
                 });
 
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     showToast(data.message);
                     searchInput.value = ''; // clear only on success
                     fetchBooks(); // Refresh list
+                } else if (res.status === 409) {
+                    // Book already exists — show a clear popup
+                    showConfirmationModal(
+                        data.detail || "This book is already in your reading list.",
+                        () => {},
+                        "OK",
+                        "primary"
+                    );
                 } else {
                     showToast(data.detail || "Failed to add book", true);
                 }

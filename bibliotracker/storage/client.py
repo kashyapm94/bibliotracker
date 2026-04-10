@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 
 from sqlalchemy import create_engine, delete, func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from bibliotracker.config import Config
@@ -50,7 +51,7 @@ class PostgresClient:
             bool: True if the book exists, False otherwise.
         """
         with self.session() as session:
-            stmt = select(Book).where(Book.title.ilike(book_title))
+            stmt = select(Book).where(func.lower(Book.title) == book_title.lower())
             result = session.execute(stmt).first()
             return result is not None
 
@@ -81,7 +82,7 @@ class PostgresClient:
         """
         try:
             if self.check_book_exists(book_title):
-                return True, f"Book '{book_title}' already exists."
+                return False, f"'{book_title}' is already in your reading list."
 
             # Format subjects
             subjects_str = ", ".join(book_subjects[:5]) if book_subjects else None
@@ -99,9 +100,12 @@ class PostgresClient:
             with self.session() as session:
                 session.add(new_book)
                 session.commit()
-                # session.refresh(new_book) # Optional, if we needed the ID back
 
             return True, "Added to the To-Read List"
+        except IntegrityError:
+            # Unique constraint violation — book already exists at DB level
+            logger.warning(f"Duplicate book prevented by DB constraint: '{book_title}'")
+            return False, f"'{book_title}' is already in your reading list."
         except Exception as error:
             logger.error(f"DB Error: {error}")
             return False, str(error)
