@@ -102,10 +102,14 @@ class PostgresClient:
                 session.commit()
 
             return True, "Added to the To-Read List"
-        except IntegrityError:
-            # Unique constraint violation — book already exists at DB level
-            logger.warning(f"Duplicate book prevented by DB constraint: '{book_title}'")
-            return False, f"'{book_title}' is already in your reading list."
+        except IntegrityError as error:
+            orig = getattr(error, "orig", None)
+            orig_type = type(orig).__name__ if orig else ""
+            if "UniqueViolation" in orig_type or "unique" in str(error).lower():
+                logger.warning(f"Duplicate book prevented by DB constraint: '{book_title}'")
+                return False, f"'{book_title}' is already in your reading list."
+            logger.error(f"DB IntegrityError: {error}")
+            return False, str(error)
         except Exception as error:
             logger.error(f"DB Error: {error}")
             return False, str(error)

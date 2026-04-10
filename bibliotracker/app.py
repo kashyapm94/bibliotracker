@@ -149,15 +149,20 @@ def add_book(selection: BookSelection, x_admin_password: str = Header(None)) -> 
         raise HTTPException(status_code=404, detail="Could not fetch book details.")
 
     # Add to Database
+    ai_title = details.get("title") or selection.title
+    ai_authors = details.get("authors")
+    if isinstance(ai_authors, list):
+        ai_author_str = ", ".join(filter(None, ai_authors)) or selection.authors_str
+    else:
+        ai_author_str = ai_authors or selection.authors_str
+
     added, msg = db_client.add_book(
-        book_title=details.get("title", selection.title),
-        book_author=", ".join(details.get("authors", []))
-        if isinstance(details.get("authors"), list)
-        else details.get("authors", selection.authors_str),
-        book_description=details.get("description", ""),
-        book_region=details.get("region", "Unknown"),
-        book_subjects=details.get("subjects", []),
-        is_fiction_category=details.get("is_fiction", "Unknown"),
+        book_title=ai_title,
+        book_author=ai_author_str,
+        book_description=details.get("description") or "",
+        book_region=details.get("region") or "Unknown",
+        book_subjects=details.get("subjects") or [],
+        is_fiction_category=details.get("is_fiction") or "Unknown",
         is_owned=selection.is_owned,
     )
 
