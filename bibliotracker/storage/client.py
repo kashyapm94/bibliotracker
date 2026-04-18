@@ -105,8 +105,11 @@ class PostgresClient:
         except IntegrityError as error:
             orig = getattr(error, "orig", None)
             orig_type = type(orig).__name__ if orig else ""
+            logger.error(f"IntegrityError: orig_type={orig_type}, error={error}")
             if "UniqueViolation" in orig_type or "unique" in str(error).lower():
-                logger.warning(f"Duplicate book prevented by DB constraint: '{book_title}'")
+                logger.warning(
+                    f"Duplicate book prevented by DB constraint: '{book_title}'"
+                )
                 return False, f"'{book_title}' is already in your reading list."
             logger.error(f"DB IntegrityError: {error}")
             return False, str(error)
@@ -186,7 +189,9 @@ class PostgresClient:
                 stmt = stmt.where(Book.is_fiction == filter_fiction)
             if filter_owned is not None:
                 stmt = stmt.where(Book.is_owned == filter_owned)
-            stmt = stmt.order_by(Book.id.desc()).offset(skip_records).limit(limit_records)
+            stmt = (
+                stmt.order_by(Book.id.desc()).offset(skip_records).limit(limit_records)
+            )
             results = session.execute(stmt).scalars().all()
             return results
 
